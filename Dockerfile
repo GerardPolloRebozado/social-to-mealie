@@ -2,15 +2,6 @@ FROM oven/bun:debian
 
 WORKDIR /app
 
-COPY package.json .
-COPY bun.lock .
-COPY src src
-COPY tsconfig.json .
-COPY public public
-
-ENV NODE_ENV production
-RUN bun install --production
-
 RUN apt update && apt install -y \
     wget \
     curl \
@@ -37,9 +28,23 @@ RUN apt update && apt install -y \
     && rm /tmp/chrome.deb \
     && apt clean && rm -rf /var/lib/apt/lists/*
 
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable
-RUN chown -R bun:bun /app
-USER bun
-CMD ["bun", "src/index.ts"]
+COPY package.json bun.lock* ./
+
+ENV NODE_ENV=production
+RUN bun install --production --frozen-lockfile
+
+COPY tsconfig.json .
+COPY public public
+COPY src src
+
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable \
+    CHROME_PATH=/usr/bin/google-chrome-stable \
+    NODE_ENV=production
+
+RUN groupadd -r bunuser && useradd -r -g bunuser bunuser \
+    && chown -R bunuser:bunuser /app
+
+USER bunuser
 
 EXPOSE 3000
+CMD ["bun", "src/index.ts"]

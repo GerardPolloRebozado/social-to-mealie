@@ -3,13 +3,16 @@ name: Build and Publish Docker Image
 on:
   release:
     types: [published]
+  pull_request:
+    types: [opened, synchronize, reopened]
 
 jobs:
   build:
-    runs-on: ubuntu-lATEST
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
+
     steps:
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v2
@@ -21,10 +24,28 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Cache Docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+        with:
+          buildkitd-flags: --debug
+
       - name: Build and push Docker image
         run: |
           REPO_NAME=${{ github.repository }}
           # Convert repository name to lowercase
           REPO_NAME=${REPO_NAME,,}
-          IMAGE_TAG=ghcr.io/${REPO_NAME}:latest
-          docker buildx build --push -t $IMAGE_TAG .
+          if [[ ${{ github.event_name }} == 'pull_request' ]]; then
+            PR_NUMBER=${{ github.event.pull_request.number }}
+            IMAGE_TAG=ghcr.io/${REPO_NAME}:pr${PR_NUMBER}
+          else
+            IMAGE_TAG=ghcr.io/${REPO_NAME}:latest
+          fi
+          docker buildx build --cache-from type=local,src=/tmp/.buildx-cache --cache-to type=local,dest=/tmp/.buildx-cache --push -t $IMAGE_TAG .
