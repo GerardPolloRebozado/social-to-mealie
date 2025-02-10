@@ -48,4 +48,4 @@ jobs:
           else
             IMAGE_TAG=ghcr.io/${REPO_NAME}:latest
           fi
-          docker buildx build --cache-from type=local,src=/tmp/.buildx-cache --cache-to type=local,dest=/tmp/.buildx-cache --push -t $IMAGE_TAG .
+          docker buildx build --platform linux/amd64,linux/arm64 --cache-from type=local,src=/tmp/.buildx-cache --cache-to type=local,dest=/tmp/.buildx-cache --push -t $IMAGE_TAG .
