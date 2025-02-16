@@ -11,7 +11,6 @@ To deploy this just use the docker-compose.yml and populate all the environment 
 ## Features
 
 - Import post from Instagram and TikTok in Mealie with a link and the click of a button
-- Use this [ios shortcut](https://www.icloud.com/shortcuts/22d59daf9a58431e9c5c9192ec491df9) so you just need to click share button
 
 ## Roadmap
 
