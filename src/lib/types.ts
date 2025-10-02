@@ -11,9 +11,13 @@ export type envTypes = {
   WHISPER_MODEL: string;
   MEALIE_URL: string;
   MEALIE_API_KEY: string;
+  USER_PROMPT: string;
+  EXTRA_PROMPT: string;
+  COOKIES_PATH: string;
 };
 
 export type recipeResult = {
+  id: string;
   name: string;
   description: string;
   imageUrl: string;
@@ -30,4 +34,13 @@ export type socialMediaResult = {
   blob: Blob;
   thumbnail: string;
   description: string;
+};
+
+export type HistoryEntry = {
+  id: string;
+  url: string;
+  status: 'success' | 'error';
+  errorMessage?: string;
+  recipeId?: string;
+  createdAt: Date;
 };

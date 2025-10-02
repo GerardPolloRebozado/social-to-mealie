@@ -3,22 +3,31 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "biome lint ."
+    "lint": "biome lint .",
+    "create-user": "ts-node scripts/create-user.ts",
+    "prisma:generate": "prisma generate",
+    "prisma:push": "prisma db push"
   },
   "dependencies": {
+    "@prisma/client": "^6.16.2",
     "@radix-ui/react-dropdown-menu": "2.1.6",
     "@radix-ui/react-slot": "1.1.2",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.10",
     "ai": "4.1.41",
+    "bcryptjs": "^3.0.2",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
     "emoji-strip": "1.0.1",
+    "jsonwebtoken": "^9.0.2",
     "lucide-react": "0.482.0",
     "m3u8-parser": "^7.2.0",
     "next": "15.3.2",
     "next-themes": "0.4.6",
+    "prisma": "^6.16.2",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "social-to-mealie": "file:",
@@ -30,12 +39,13 @@
     "@biomejs/biome": "1.9.4",
     "@types/emoji-strip": "1.0.2",
     "@types/m3u8-parser": "7.2.2",
-    "@types/node": "22.13.10",
+    "@types/node": "^22.13.10",
     "@types/react": "19.0.10",
     "@types/react-dom": "19.0.4",
     "postcss": "8.5.3",
     "tailwindcss": "3.4.17",
-    "typescript": "5.8.2"
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.2"
   },
   "packageManager": "pnpm@9.15.4+sha512.b2dc20e2fc72b3e18848459b37359a32064663e5627a51e4c74b2c29dd8e8e0491483c3abb40789cfd578bf362fb6ba8261b05f0387d76792ed6e23ea3b1b6a0"
 }

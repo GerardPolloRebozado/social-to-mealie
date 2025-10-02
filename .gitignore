@@ -40,3 +40,24 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 yt-dlp
+yt-dlp.exe
+
+# Database
+prisma/dev.db
+prisma/dev.db-journal
+
+# Temporary files
+temp/
+*.tmp
+*.log
+
+# User specific files
+cookies.txt
+Cookies.txt
+/cookies.txt
+/Cookies.txt
+
+# Docker volumes and data
+data/
+*.db
+*.db-journal

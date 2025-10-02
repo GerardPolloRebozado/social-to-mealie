@@ -1,6 +1,9 @@
 name: Build and Publish Docker Image
 
 on:
+  push:
+    branches: [ "main" ]
+    tags: [ 'v*.*.*' ]
   release:
     types: [published]
 
@@ -32,9 +35,9 @@ jobs:
           VERSION_TAG=ghcr.io/${REPO_NAME}:${{ github.ref_name }}
           LATEST_TAG=ghcr.io/${REPO_NAME}:latest
           
-          # Build and push for multiple architectures with both tags
+          # Build and push for AMD64 architecture (ARM64 temporarily disabled due to build issues)
           docker buildx build \
-            --platform linux/amd64,linux/arm64 \
+            --platform linux/amd64 \
             --push \
             -t $VERSION_TAG \
             -t $LATEST_TAG .

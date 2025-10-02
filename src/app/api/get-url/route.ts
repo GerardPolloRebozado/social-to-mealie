@@ -2,11 +2,15 @@ import { getRecipe, postRecipe } from '@//lib/mealie';
 import type { progressType, recipeInfo, socialMediaResult } from '@//lib/types';
 import { getTranscription } from '@/lib/ai';
 import { downloadMediaWithYtDlp } from '@/lib/yt-dlp';
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/db';
+import { getEnv } from '@/lib/constants';
 
 interface RequestBody {
   url: string;
 }
-async function handleRequest(url: string, isSse: boolean, controller?: ReadableStreamDefaultController) {
+
+async function handleRequest(url: string, req: NextRequest, isSse: boolean, controller?: ReadableStreamDefaultController) {
   const encoder = new TextEncoder();
   let socialMediaResult: socialMediaResult;
   const progress: progressType = {
@@ -15,69 +19,126 @@ async function handleRequest(url: string, isSse: boolean, controller?: ReadableS
     recipeCreated: null,
   };
 
-  try {
-    if (isSse && controller) {
-      controller.enqueue(encoder.encode(`data: ${JSON.stringify({ progress })}\n\n`));
-    }
-    socialMediaResult = await downloadMediaWithYtDlp(url);
-    progress.videoDownloaded = true;
+  // Get the latest configuration
+  const config = await getEnv();
 
-    if (isSse && controller) {
-      controller.enqueue(encoder.encode(`data: ${JSON.stringify({ progress })}\n\n`));
+  try {
+    // Download video
+    progress.videoDownloaded = null;
+    if (isSse) {
+      controller?.enqueue(encoder.encode(`data: ${JSON.stringify({ progress })}\n\n`));
     }
+
+    // Use cookies path from configuration
+    const cookiesPath = config.COOKIES_PATH;
+    console.log('Using cookies path from config:', cookiesPath);
+    
+    socialMediaResult = await downloadMediaWithYtDlp(url, cookiesPath);
+    progress.videoDownloaded = true;
+    
+    if (isSse) {
+      controller?.enqueue(encoder.encode(`data: ${JSON.stringify({ progress })}\n\n`));
+    }
+
+    // Transcribe audio
+    progress.audioTranscribed = null;
+    if (isSse) {
+      controller?.enqueue(encoder.encode(`data: ${JSON.stringify({ progress })}\n\n`));
+    }
+
+    // Use configurations for transcription
     const transcription = await getTranscription(socialMediaResult.blob);
     progress.audioTranscribed = true;
-    if (isSse && controller) {
-      controller.enqueue(encoder.encode(`data: ${JSON.stringify({ progress })}\n\n`));
+    
+    if (isSse) {
+      controller?.enqueue(encoder.encode(`data: ${JSON.stringify({ progress })}\n\n`));
     }
-    const data: recipeInfo = {
+
+    // Create recipe in Mealie
+    progress.recipeCreated = null;
+    if (isSse) {
+      controller?.enqueue(encoder.encode(`data: ${JSON.stringify({ progress })}\n\n`));
+    }
+
+    const recipeInfo: recipeInfo = {
       postURL: url,
-      transcription,
+      transcription: transcription,
       thumbnail: socialMediaResult.thumbnail,
-      description: socialMediaResult.description,
+      description: socialMediaResult.description
     };
-    console.log('Creating recipe');
-    const mealieResponse = await postRecipe(data);
-    const createdRecipe = await getRecipe(await mealieResponse);
-    console.log('Recipe created');
+
+    const createdRecipe = await postRecipe(recipeInfo);
     progress.recipeCreated = true;
-    if (isSse && controller) {
-      controller.enqueue(encoder.encode(`data: ${JSON.stringify({ progress })}\n\n`));
-      controller.enqueue(encoder.encode(`data: ${JSON.stringify(createdRecipe)}\n\n`));
-      controller.close();
-      return;
+
+    // Save to ProcessedUrl
+    await prisma.processedUrl.create({
+      data: {
+        url,
+        status: 'success',
+        recipeId: createdRecipe.id
+      }
+    });
+
+    if (isSse) {
+      controller?.enqueue(
+        encoder.encode(`data: ${JSON.stringify({ progress, createdRecipe })}\n\n`),
+      );
+      controller?.close();
     }
-    return new Response(JSON.stringify({ createdRecipe, progress }), { status: 200 });
-  } catch (error: any) {
-    if (isSse && controller) {
-      progress.recipeCreated = false;
-      controller.enqueue(encoder.encode(`data: ${JSON.stringify({ error: error.message, progress })}\n\n`));
-      controller.close();
-      return;
-    }
-    return new Response(JSON.stringify({ error: error.message, progress }), { status: 500 });
+
+    return createdRecipe;
+  } catch (error) {
+    // Save failed attempt to ProcessedUrl
+    await prisma.processedUrl.create({
+      data: {
+        url,
+        status: 'error',
+        errorMessage: error instanceof Error ? error.message : 'Unknown error'
+      }
+    });
+
+    throw error;
   }
 }
 
-export async function POST(req: Request) {
-  const body: RequestBody = await req.json();
-  const url = body.url;
-  const contentType = req.headers.get('Content-Type');
+export const POST = async (req: NextRequest) => {
+  const encoder = new TextEncoder();
 
-  if (contentType === 'text/event-stream') {
-    const stream = new ReadableStream({
+  try {
+    const { url } = await req.json() as RequestBody;
+
+    const readable = new ReadableStream({
       async start(controller) {
-        await handleRequest(url, true, controller);
+        try {
+          await handleRequest(url, req, true, controller);
+        } catch (error) {
+          controller.enqueue(
+            encoder.encode(
+              `data: ${JSON.stringify({
+                error: error instanceof Error ? error.message : 'Unknown error',
+              })}\n\n`,
+            ),
+          );
+          controller.close();
+        }
       },
     });
 
-    return new Response(stream, {
+    return new Response(readable, {
       headers: {
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
         Connection: 'keep-alive',
       },
     });
+  } catch (error) {
+    return NextResponse.json(
+      { error: 'Invalid request body' },
+      { status: 400 }
+    );
   }
-  return handleRequest(url, false);
 }
+
+export const GET = async (req: NextRequest) => {
+  return new Response(null, { status: 405 });
+};
