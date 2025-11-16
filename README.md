@@ -47,6 +47,8 @@ Other sites may work as well, since the tool uses `yt-dlp` to download videos. I
           - WHISPER_MODEL=whisper-1 # this model will be used to transcribe the audio to text
           - MEALIE_URL=https://mealie.example.com # url of you mealie instance
           - MEALIE_API_KEY=${MEALIE_API_KEY}
+          # Optional, Mealie group name, defaults to "home"
+          - MEALIE_GROUP_NAME=home
           # Optional, customize the standard prompt if needed this will replace it
           - USER_PROMPT=Custom prompt
           # Optional, addition to the prompt, useful for translation needs
@@ -79,6 +81,7 @@ docker run --restart unless-stopped --name social-to-mealie \
   -e WHISPER_MODEL=whisper-1 \
   -e MEALIE_URL=https://mealie.example.com \
   -e MEALIE_API_KEY=ey... \
+  -e MEALIE_GROUP_NAME=home \
   -e USER_PROMPT="Custom prompt" \
   -e EXTRA_PROMPT="The description, ingredients, and instructions must be provided in Spanish" \
   -p 4000:3000 \
@@ -89,12 +92,13 @@ docker run --restart unless-stopped --name social-to-mealie \
 
 ## Environment Variables
 
-| Variable         | Required | Description                                                      |
-|------------------|----------|------------------------------------------------------------------|
-| OPENAI_URL       | Yes      | URL for the OpenAI API                                           |
-| OPENAI_API_KEY   | Yes      | API key for OpenAI                                               |
-| WHISPER_MODEL    | Yes      | Whisper model to use                                             |
-| MEALIE_URL       | Yes      | URL of your Mealie instance                                      |
-| MEALIE_API_KEY   | Yes      | API key for Mealie                                               |
-| USER_PROMPT      | No       | Custom prompt for recipe extraction                              |
-| EXTRA_PROMPT     | No       | Additional instructions for AI, such as language translation     |
+| Variable          | Required | Description                                                  |
+| ----------------- | -------- | ------------------------------------------------------------ |
+| OPENAI_URL        | Yes      | URL for the OpenAI API                                       |
+| OPENAI_API_KEY    | Yes      | API key for OpenAI                                           |
+| WHISPER_MODEL     | Yes      | Whisper model to use                                         |
+| MEALIE_URL        | Yes      | URL of your Mealie instance                                  |
+| MEALIE_API_KEY    | Yes      | API key for Mealie                                           |
+| MEALIE_GROUP_NAME | No       | Mealie group name, defaults to "home"                        |
+| USER_PROMPT       | No       | Custom prompt for recipe extraction                          |
+| EXTRA_PROMPT      | No       | Additional instructions for AI, such as language translation |
