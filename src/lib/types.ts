@@ -11,6 +11,7 @@ export type envTypes = {
   WHISPER_MODEL: string;
   MEALIE_URL: string;
   MEALIE_API_KEY: string;
+  MEALIE_GROUP_NAME: string;
 };
 
 export type recipeResult = {
