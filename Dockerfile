@@ -1,10 +1,20 @@
 FROM node:lts-alpine AS base
 
 RUN apk add --no-cache \
-    wget \
-    curl \
-    unzip \
-    ffmpeg
+        wget \
+        curl \
+        unzip \
+        ffmpeg \
+        python3 \
+        py3-pip \
+        deno # Deno is the recommended JS runtime for yt-dlp
+
+# Install uv for Python package management and use it for yt-dlp inside a venv
+ENV PATH="/root/.local/bin:${PATH}"
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh && \
+        uv venv /opt/uv && \
+        uv pip install --python /opt/uv/bin/python --no-cache "yt-dlp[default]" && \
+        ln -s /opt/uv/bin/yt-dlp /usr/local/bin/yt-dlp
 
 WORKDIR /app
 

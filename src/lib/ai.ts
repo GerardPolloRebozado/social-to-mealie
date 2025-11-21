@@ -1,30 +1,63 @@
+import { Buffer } from 'node:buffer';
+
+import { OpenRouter } from '@openrouter/sdk';
+
 import { env } from './constants';
+
+const openRouterClient = new OpenRouter({
+  apiKey: env.OPENROUTER_API_KEY,
+  serverURL: env.OPENROUTER_URL,
+});
+
+function detectAudioFormat(mimeType: string | undefined): 'mp3' | 'wav' {
+  if (!mimeType) {
+    return 'wav';
+  }
+  if (mimeType.includes('wav')) {
+    return 'wav';
+  }
+  return 'mp3';
+}
 
 export async function getTranscription(blob: Blob) {
   try {
-    if (!env.WHISPER_MODEL) {
-      throw new Error('WHISPER_MODEL is not set');
+    if (!env.TRANSCRIPTION_MODEL) {
+      throw new Error('TRANSCRIPTION_MODEL is not set');
+    }
+    if (!env.OPENROUTER_API_KEY) {
+      throw new Error('OPENROUTER_API_KEY is not set');
     }
 
-    const formData = new FormData();
-    const file = new File([blob], 'audio.wav', { type: blob.type });
-    formData.append('file', file);
-    formData.append('model', env.WHISPER_MODEL);
-
-    const response = await fetch(`${env.OPENAI_URL}/audio/transcriptions`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${env.OPENAI_API_KEY}`,
+    const audioBuffer = Buffer.from(await blob.arrayBuffer());
+    const base64Audio = audioBuffer.toString('base64');
+    const response = await openRouterClient.callModel({
+      model: env.TRANSCRIPTION_MODEL,
+      instructions: 'Transcribe the provided audio into plain text without additional commentary.',
+      input: [
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'input_audio',
+              inputAudio: {
+                data: base64Audio,
+                format: detectAudioFormat(blob.type),
+              },
+            },
+          ],
+        },
+      ],
+      text: {
+        format: { type: 'text' },
+        verbosity: 'low',
       },
-      body: formData,
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+    const transcription = await response.getText();
+    if (!transcription) {
+      throw new Error('Transcription result was empty');
     }
-
-    const transcription = await response.json();
-    return transcription.text;
+    return transcription.trim();
   } catch (error) {
     console.error('Error in getTranscription:', error);
     throw new Error('Failed to transcribe audio');

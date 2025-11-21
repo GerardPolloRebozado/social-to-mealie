@@ -7,7 +7,7 @@ const ytDlpPath = path.resolve('./yt-dlp');
 const outputDir = path.resolve('./temp');
 
 export async function ensureYtDlpBinary() {
-  const ytDlpVersion = process.env.YT_DLP_VERSION || '2025.05.22';
+  const ytDlpVersion = process.env.YT_DLP_VERSION || '2025.11.12';
   const exists = await fs
       .access(ytDlpPath)
       .then(() => true)
@@ -32,6 +32,17 @@ export async function downloadWithYtDlp(url: string) {
   await fs.mkdir(outputDir, { recursive: true });
   try {
     await ytDlpWrap.execPromise([url, '-x', '--audio-format', 'wav', '-o', outputFile]);
+    // let args = [url, '-U', '-x', '--audio-format', 'wav'];
+    // try {
+    //   const hostname = new URL(url).hostname.replace(/^www\./, '');
+    //   if (hostname === 'youtube.com' || hostname === 'youtu.be') {
+    //   args = [...args, '--remote-components', 'ejs:npm'];
+    //   }
+    // } catch {
+    //   // ignore invalid URL; fallback to default args
+    // }
+    // args = [...args, '-o', outputFile];
+    // await ytDlpWrap.execPromise(args);
     const metadata = await ytDlpWrap.getVideoInfo(url);
     const buffer = await fs.readFile(outputFile);
     return { buffer, metadata };

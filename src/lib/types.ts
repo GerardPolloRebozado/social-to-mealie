@@ -6,9 +6,9 @@ export type recipeInfo = {
 };
 
 export type envTypes = {
-  OPENAI_URL: string;
-  OPENAI_API_KEY: string;
-  WHISPER_MODEL: string;
+  OPENROUTER_URL: string;
+  OPENROUTER_API_KEY: string;
+  TRANSCRIPTION_MODEL: string;
   MEALIE_URL: string;
   MEALIE_API_KEY: string;
   MEALIE_GROUP_NAME: string;

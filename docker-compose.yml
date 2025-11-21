@@ -1,20 +1,18 @@
 services:
   social-to-mealie:
     restart: unless-stopped
-    image: ghcr.io/gerardpollorebozado/social-to-mealie:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: social-to-mealie
     environment:
-      - OPENAI_URL=https://api.openai.com/v1 #URL of api endpoint of AI provider
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - WHISPER_MODEL=whisper-1 # this model will be used to transcribe the audio to text
-      - MEALIE_URL=https://mealie.example.com # url of you mealie instance
+      - OPENROUTER_URL=${OPENROUTER_URL}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - TRANSCRIPTION_MODEL=${TRANSCRIPTION_MODEL}
+      - MEALIE_URL=${MEALIE_URL}
       - MEALIE_API_KEY=${MEALIE_API_KEY}
-      # Optional, Mealie group name, defaults to "home"
-      - MEALIE_GROUP_NAME=home
-      # Optional, customize the standard prompt if needed this will replace it
-      - USER_PROMPT=Custom prompt
-      # Optional, addition to the prompt, useful for translation needs
-      - EXTRA_PROMPT=The description, ingredients, and instructions must be provided in Spanish
+      - MEALIE_GROUP_NAME=${MEALIE_GROUP_NAME}
+      - EXTRA_PROMPT=${EXTRA_PROMPT}
     ports:
       - 4000:3000
     security_opt:
