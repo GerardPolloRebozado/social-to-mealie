@@ -7,7 +7,7 @@ const ytDlpPath = path.resolve('./yt-dlp');
 const outputDir = path.resolve('./temp');
 
 export async function ensureYtDlpBinary() {
-  const ytDlpVersion = process.env.YT_DLP_VERSION || '2025.05.22';
+  const ytDlpVersion = process.env.YT_DLP_VERSION || '2025.10.14';
   const exists = await fs
       .access(ytDlpPath)
       .then(() => true)
