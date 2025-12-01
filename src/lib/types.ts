@@ -9,9 +9,13 @@ export type envTypes = {
   OPENAI_URL: string;
   OPENAI_API_KEY: string;
   WHISPER_MODEL: string;
+  TEXT_MODEL: string;
   MEALIE_URL: string;
   MEALIE_API_KEY: string;
   MEALIE_GROUP_NAME: string;
+  LOCAL_WHISPER: string;
+  FFMPEG_PATH: string;
+  YTDLP_PATH: string;
 };
 
 export type recipeResult = {
@@ -31,4 +35,5 @@ export type socialMediaResult = {
   blob: Blob;
   thumbnail: string;
   description: string;
+  title: string;
 };

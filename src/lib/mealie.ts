@@ -2,23 +2,13 @@ import { env } from '@//lib/constants';
 import emojiStrip from 'emoji-strip';
 import type { recipeInfo, recipeResult } from './types';
 
-export async function postRecipe(recipe: recipeInfo) {
-  let prompt =
-    process.env.USER_PROMPT ||
-    `FORGET ALL PREVIOUS PROMPTS!
-You are now a bot that will extract a recipe from the following transcript and description to the best of your ability. Output JSON only, in schema.org Recipe format with valid JSON-LD. Use the following fields:
-- @context
-- @type
-- name
-- image (use thumbnail)
-- url (use the postURL)
-- description (1-2 sentences)
-- recipeIngredient (array of ingredients)
-- recipeInstructions (array of steps)\n` + process.env.EXTRA_PROMPT;
-  console.log(prompt);
-  prompt += `<transcription> ${recipe.transcription}</transcription> <thumbnail> ${recipe.thumbnail}</thumbnail> <description> ${recipe.description}</description><postURL>${recipe.postURL}</postURL>`;
-  const data = emojiStrip(prompt);
+export async function postRecipe(recipeData: any) {
   try {
+    // If recipeData is an object (our generated JSON), stringify it.
+    // Mealie's /api/recipes/create/html-or-json endpoint expects { data: "..." }
+    // where "..." can be a URL, HTML, or JSON-LD.
+    const payloadData = typeof recipeData === 'string' ? recipeData : JSON.stringify(recipeData);
+
     const res = await fetch(`${env.MEALIE_URL}/api/recipes/create/html-or-json`, {
       method: 'POST',
       headers: {
@@ -26,14 +16,14 @@ You are now a bot that will extract a recipe from the following transcript and d
         Authorization: `Bearer ${env.MEALIE_API_KEY}`,
       },
       body: JSON.stringify({
-        data: data,
+        data: payloadData,
       }),
       signal: AbortSignal.timeout(120000),
     });
 
     if (!res.ok) {
       const errorText = await res.text();
-      console.error(`${res.status} ${res.statusText} - ${errorText} - ${recipe.transcription} - ${recipe.description}`);
+      console.error(`${res.status} ${res.statusText} - ${errorText}`);
       throw new Error('Failed to create recipe');
     }
     const body = await res.json();
