@@ -2,10 +2,6 @@ import { env } from "./constants";
 import { createOpenAI } from "@ai-sdk/openai";
 import { experimental_transcribe, generateObject } from "ai";
 import { z } from "zod";
-import * as os from "os";
-import * as path from "path";
-import { writeFile, unlink } from "fs/promises";
-import { randomBytes } from "crypto";
 
 // Initialize OpenAI client
 const client = createOpenAI({
@@ -13,76 +9,24 @@ const client = createOpenAI({
     apiKey: env.OPENAI_API_KEY,
 });
 
-const transcriptionModel = client.transcription(env.WHISPER_MODEL);
+const transcriptionModel = client.transcription(env.TRANSCRIPTION_MODEL);
 const textModel = client.chat(env.TEXT_MODEL);
 
 export async function getTranscription(blob: Blob): Promise<string> {
-    const useLocal =
-        env.LOCAL_WHISPER === "true" || env.LOCAL_WHISPER === "TRUE";
+    // Always use Vercel AI SDK for transcription
+    try {
+        // The experimental_transcribe function expects audio as a Buffer or Uint8Array
+        const audioBuffer = Buffer.from(await blob.arrayBuffer());
 
-    if (useLocal) {
-        const buffer = Buffer.from(await blob.arrayBuffer());
-        const tmpDir = os.tmpdir();
-        const tmpName = `ai-transcribe-${Date.now()}-${randomBytes(6).toString(
-            "hex"
-        )}.wav`;
-        const tmpPath = path.join(tmpDir, tmpName);
+        const result = await experimental_transcribe({
+            model: transcriptionModel,
+            audio: audioBuffer,
+        });
 
-        try {
-            await writeFile(tmpPath, buffer);
-
-            const modelName = env.WHISPER_MODEL || "base";
-            const { nodewhisper } = await import("nodejs-whisper");
-
-            const rawResult = await nodewhisper(tmpPath, {
-                modelName,
-                autoDownloadModelName: modelName,
-                removeWavFileAfterTranscription: true,
-                whisperOptions: {
-                    outputInText: true,
-                },
-            } as any);
-
-            // Handle different return types from nodejs-whisper
-            if (typeof rawResult === "string") return rawResult;
-
-            // It might return an object with text, result, or outputFile
-            const resultObj = rawResult as any;
-            if (resultObj.text) return resultObj.text;
-            if (resultObj.result) return resultObj.result;
-            if (resultObj.outputFile) {
-                try {
-                    const { readFile } = await import("fs/promises");
-                    return await readFile(resultObj.outputFile, "utf8");
-                } catch (err) {
-                    console.error(
-                        "Error reading nodewhisper output file:",
-                        err
-                    );
-                }
-            }
-
-            return JSON.stringify(resultObj);
-        } catch (e) {
-            console.error("Local whisper transcription error:", e);
-            throw new Error("Failed to transcribe audio locally");
-        } finally {
-            await unlink(tmpPath).catch(() => undefined);
-        }
-    } else {
-        try {
-            const audioBuffer = Buffer.from(await blob.arrayBuffer());
-
-            const result = await experimental_transcribe({
-                model: transcriptionModel,
-                audio: audioBuffer,
-            });
-
-            return result.text;
-        } catch (error) {
-            console.error("Error in getTranscription (AI SDK):", error);
-            throw new Error("Failed to transcribe audio via API");
-        }
+        return result.text;
+    } catch (error) {
+        console.error("Error in getTranscription (AI SDK):", error);
+        throw new Error("Failed to transcribe audio via API");
     }
 }
 
@@ -116,6 +60,7 @@ export async function generateRecipeFromAI(
             schema,
             prompt: `
         You are an expert chef assistant. Extract a structured recipe from the transcript below.
+
         <Metadata>
           Post URL: ${postURL}
           Description: ${description}
