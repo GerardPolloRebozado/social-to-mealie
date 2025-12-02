@@ -4,7 +4,7 @@
 
 set -e
 
-YTDLP_BIN_PATH="${YTDLP_PATH:-/usr/local/bin/yt-dlp}"
+YTDLP_BIN_PATH="${YTDLP_PATH:-./yt-dlp}"
 YTDLP_VER="${YTDLP_VERSION:-}"
 
 download_yt_dlp() {

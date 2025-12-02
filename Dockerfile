@@ -33,7 +33,7 @@ ARG YTDLP_VERSION=latest
 ENV YTDLP_VERSION=${YTDLP_VERSION}
 
 # Default path for yt-dlp binary
-ENV YTDLP_PATH=/usr/local/bin/yt-dlp
+ENV YTDLP_PATH=./yt-dlp
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
@@ -53,6 +53,12 @@ RUN if [ -n "$YTDLP_VERSION" ]; then \
     YTDLP_URL="https://github.com/yt-dlp/yt-dlp/releases/download/${YTDLP_VERSION}/yt-dlp"; \
     fi && \
     wget -q -O $YTDLP_PATH "$YTDLP_URL" && chmod +x $YTDLP_PATH || true; \
+    fi
+
+# Ensure the downloaded binary (if any) is owned by the app user so runtime chown/chmod won't fail
+RUN if [ -f "$YTDLP_PATH" ]; then \
+    chown nextjs:nodejs "$YTDLP_PATH" || true; \
+    chmod +x "$YTDLP_PATH" || true; \
     fi
 
 USER nextjs
