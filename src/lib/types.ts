@@ -15,6 +15,7 @@ export type envTypes = {
     MEALIE_GROUP_NAME: string;
     FFMPEG_PATH: string;
     YTDLP_PATH: string;
+    EXTRA_PROMPT: string;
 };
 
 export type recipeResult = {
