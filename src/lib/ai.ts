@@ -34,7 +34,8 @@ export async function generateRecipeFromAI(
     transcription: string,
     description: string,
     postURL: string,
-    thumbnail: string
+    thumbnail: string,
+    extraPrompt: string
 ) {
     const schema = z.object({
         "@context": z
@@ -74,6 +75,12 @@ export async function generateRecipeFromAI(
         Use the thumbnail for the image field and the post URL for the url field.
         Extract ingredients and instructions clearly.
         Output must be valid JSON-LD Schema.org Recipe format.
+        ${
+            extraPrompt.length > 1
+                ? ` Also the user requests that:
+        ${extraPrompt}`
+                : ""
+        }
       `,
         });
 
