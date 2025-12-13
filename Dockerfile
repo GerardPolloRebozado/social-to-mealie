@@ -1,6 +1,6 @@
 FROM node:lts-alpine AS base
 
-RUN apk add --no-cache \
+RUN apk add --no-cache --no-scripts \
     wget \
     curl \
     unzip \
@@ -22,7 +22,7 @@ RUN node --run build
 FROM base AS runner
 WORKDIR /app
 
-RUN apk add --no-cache python3 py3-pip
+RUN apk add --no-cache --no-scripts python3 py3-pip
 
 ENV NODE_ENV=production
 ENV PORT=3000
