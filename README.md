@@ -50,8 +50,6 @@ Other sites may work as well, since the tool uses `yt-dlp` to download videos. I
                 - MEALIE_API_KEY=${MEALIE_API_KEY}
                 # Optional, Mealie group name, defaults to "home"
                 - MEALIE_GROUP_NAME=home
-                # Optional, customize the standard prompt if needed this will replace it
-                - USER_PROMPT=Custom prompt
                 # Optional, addition to the prompt, useful for translation needs
                 - EXTRA_PROMPT=The description, ingredients, and instructions must be provided in Spanish
             ports:
@@ -84,7 +82,6 @@ docker run --restart unless-stopped --name social-to-mealie \
   -e MEALIE_URL=https://mealie.example.com \
   -e MEALIE_API_KEY=ey... \
   -e MEALIE_GROUP_NAME=home \
-  -e USER_PROMPT="Custom prompt" \
   -e EXTRA_PROMPT="The description, ingredients, and instructions must be provided in Spanish" \
   -p 4000:3000 \
   --security-opt no-new-privileges:true \

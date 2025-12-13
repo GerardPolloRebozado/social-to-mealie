@@ -5,6 +5,7 @@ import {
     getTranscription,
     refineRecipeWithAI,
 } from "@/lib/ai"; // Import new AI functions
+import { env } from "@/lib/constants";
 import { downloadMediaWithYtDlp } from "@/lib/yt-dlp";
 
 interface RequestBody {
@@ -53,7 +54,8 @@ async function handleRequest(
             transcription,
             socialMediaResult.description,
             url, // Use the original URL for postURL
-            socialMediaResult.thumbnail
+            socialMediaResult.thumbnail,
+            env.EXTRA_PROMPT || ""
         );
 
         if (isSse && controller) {
