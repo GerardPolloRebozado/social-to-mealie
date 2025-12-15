@@ -33,7 +33,7 @@ Other sites may work as well, since the tool uses `yt-dlp` to download videos. I
 <details open>
     <summary>Docker Compose</summary>
 
-1. Create a `docker-compose.yml` file based on the (example)[https://github.com/GerardPolloRebozado/social-to-mealie/blob/main/docker-compose.yml] in the repo and fill in the required environment variables, if you prefer having them in a separate file you can create a `.env` file based on the (example.env)[https://github.com/GerardPolloRebozado/social-to-mealie/blob/main/example.env].
+1. Create a `docker-compose.yml` file based on the [example](https://github.com/GerardPolloRebozado/social-to-mealie/blob/main/docker-compose.yml) in the repo and fill in the required environment variables, if you prefer having them in a separate file you can create a `.env` file based on the [example.env](https://github.com/GerardPolloRebozado/social-to-mealie/blob/main/example.env).
 
 2. **Start the service with Docker Compose:**
     ```sh
