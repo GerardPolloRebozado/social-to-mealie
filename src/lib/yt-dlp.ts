@@ -12,13 +12,16 @@ export async function downloadMediaWithYtDlp(
 ): Promise<socialMediaResult> {
     try {
         // Get video metadata first
-        const metadata = (await ytdlp.getInfoAsync(url)) as VideoInfo;
+        const metadata = (await ytdlp.getInfoAsync(url, {
+            cookies: env.COOKIES,
+        })) as VideoInfo;
 
         // Get audio stream as a file/buffer
         // ytdlp-nodejs 'getFileAsync' with filter 'audioonly' retrieves the audio
         // and allows accessing it via .bytes() which returns a Uint8Array
         const audioFile = await ytdlp.getFileAsync(url, {
             format: { filter: "audioonly" },
+            cookies: env.COOKIES,
         });
 
         const buffer = await audioFile.bytes();

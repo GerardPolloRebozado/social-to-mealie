@@ -16,6 +16,7 @@ export type envTypes = {
     FFMPEG_PATH: string;
     YTDLP_PATH: string;
     EXTRA_PROMPT: string;
+    COOKIES: string;
 };
 
 export type recipeResult = {
