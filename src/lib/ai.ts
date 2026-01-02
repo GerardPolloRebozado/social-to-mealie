@@ -35,7 +35,8 @@ export async function generateRecipeFromAI(
     description: string,
     postURL: string,
     thumbnail: string,
-    extraPrompt: string
+    extraPrompt: string,
+    tags: string[]
 ) {
     const schema = z.object({
         "@context": z
@@ -53,6 +54,7 @@ export async function generateRecipeFromAI(
                 text: z.string(),
             })
         ),
+        keywords: z.array(z.string()).optional(),
     });
 
     try {
@@ -60,7 +62,11 @@ export async function generateRecipeFromAI(
             model: textModel,
             schema,
             prompt: `
-        You are an expert chef assistant. Extract a structured recipe from the transcript below.
+         You are an expert chef assistant. Review the following recipe transcript and refine it for clarity, conciseness, and accuracy.
+        Ensure ingredients and instructions are well-formatted and easy to follow.
+        Correct any obvious errors or omissions.
+        Output must be valid JSON-LD Schema.org Recipe format.
+        The keywords field should not be modified leave it as it comes
 
         <Metadata>
           Post URL: ${postURL}
@@ -71,6 +77,10 @@ export async function generateRecipeFromAI(
         <Transcription>
           ${transcription}
         </Transcription>
+
+        <keywords>
+            ${tags.join(", ")}
+            </keywords>
 
         Use the thumbnail for the image field and the post URL for the url field.
         Extract ingredients and instructions clearly.
@@ -88,46 +98,5 @@ export async function generateRecipeFromAI(
     } catch (error) {
         console.error("Error generating recipe with AI:", error);
         throw new Error("Failed to generate recipe structure");
-    }
-}
-
-export async function refineRecipeWithAI(initialRecipeJson: any) {
-    const schema = z.object({
-        "@context": z
-            .literal("https://schema.org")
-            .default("https://schema.org"),
-        "@type": z.literal("Recipe").default("Recipe"),
-        name: z.string(),
-        image: z.string().optional(),
-        url: z.string().optional(),
-        description: z.string(),
-        recipeIngredient: z.array(z.string()),
-        recipeInstructions: z.array(
-            z.object({
-                "@type": z.literal("HowToStep").default("HowToStep"),
-                text: z.string(),
-            })
-        ),
-    });
-
-    try {
-        const { object } = await generateObject({
-            model: textModel,
-            schema,
-            prompt: `
-        You are an expert chef assistant. Review the following recipe JSON and refine it for clarity, conciseness, and accuracy.
-        Ensure ingredients and instructions are well-formatted and easy to follow.
-        Correct any obvious errors or omissions.
-        Output must be valid JSON-LD Schema.org Recipe format.
-
-        <InitialRecipeJson>
-          ${JSON.stringify(initialRecipeJson, null, 2)}
-        </InitialRecipeJson>
-      `,
-        });
-        return object;
-    } catch (error) {
-        console.error("Error refining recipe with AI:", error);
-        throw new Error("Failed to refine recipe structure");
     }
 }

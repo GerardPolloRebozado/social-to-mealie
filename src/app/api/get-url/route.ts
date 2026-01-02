@@ -1,25 +1,21 @@
 import { getRecipe, postRecipe } from "@//lib/mealie";
 import type { progressType, recipeInfo, socialMediaResult } from "@//lib/types";
-import {
-    generateRecipeFromAI,
-    getTranscription,
-    refineRecipeWithAI,
-} from "@/lib/ai"; // Import new AI functions
+import { generateRecipeFromAI, getTranscription } from "@/lib/ai"; // Import new AI functions
 import { env } from "@/lib/constants";
 import { downloadMediaWithYtDlp } from "@/lib/yt-dlp";
 
 interface RequestBody {
     url: string;
+    tags: string[];
 }
 async function handleRequest(
     url: string,
+    tags: string[],
     isSse: boolean,
     controller?: ReadableStreamDefaultController
 ) {
     const encoder = new TextEncoder();
     let socialMediaResult: socialMediaResult;
-    let initialRecipe: any; // Using 'any' for now, will be Schema.org Recipe JSON
-    let refinedRecipe: any; // Using 'any' for now, will be Schema.org Recipe JSON
 
     const progress: progressType = {
         videoDownloaded: null,
@@ -49,35 +45,18 @@ async function handleRequest(
             );
         }
 
-        // Generate initial recipe JSON using AI
-        initialRecipe = await generateRecipeFromAI(
+        // Generate recipe JSON using AI
+        const recipe = await generateRecipeFromAI(
             transcription,
             socialMediaResult.description,
             url, // Use the original URL for postURL
             socialMediaResult.thumbnail,
-            env.EXTRA_PROMPT || ""
+            env.EXTRA_PROMPT || "",
+            tags
         );
 
-        if (isSse && controller) {
-            controller.enqueue(
-                encoder.encode(
-                    `data: ${JSON.stringify({ progress, initialRecipe })})\n\n`
-                )
-            );
-        }
-
-        refinedRecipe = await refineRecipeWithAI(initialRecipe);
-
-        if (isSse && controller) {
-            controller.enqueue(
-                encoder.encode(
-                    `data: ${JSON.stringify({ progress, refinedRecipe })})\n\n`
-                )
-            );
-        }
-
-        console.log("Posting recipe to Mealie");
-        const mealieResponse = await postRecipe(refinedRecipe);
+        console.log("Posting recipe to Mealie", recipe);
+        const mealieResponse = await postRecipe(recipe);
         const createdRecipe = await getRecipe(await mealieResponse);
         console.log("Recipe created");
         progress.recipeCreated = true;
@@ -118,12 +97,13 @@ async function handleRequest(
 export async function POST(req: Request) {
     const body: RequestBody = await req.json();
     const url = body.url;
+    const tags = body.tags;
     const contentType = req.headers.get("Content-Type");
 
     if (contentType === "text/event-stream") {
         const stream = new ReadableStream({
             async start(controller) {
-                await handleRequest(url, true, controller);
+                await handleRequest(url, tags, true, controller);
             },
         });
 
@@ -135,5 +115,5 @@ export async function POST(req: Request) {
             },
         });
     }
-    return handleRequest(url, false);
+    return handleRequest(url, tags, false);
 }
