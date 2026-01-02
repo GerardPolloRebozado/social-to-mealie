@@ -38,3 +38,15 @@ export type socialMediaResult = {
     description: string;
     title: string;
 };
+
+export type tag = {
+    id: string;
+    groupId: string;
+    name: string;
+    slug: string;
+};
+
+export type Option = {
+    label: string;
+    value: string;
+};
