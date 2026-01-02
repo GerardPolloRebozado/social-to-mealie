@@ -66,7 +66,7 @@ export async function generateRecipeFromAI(
         Ensure ingredients and instructions are well-formatted and easy to follow.
         Correct any obvious errors or omissions.
         Output must be valid JSON-LD Schema.org Recipe format.
-        The keywords field should not be modified leave it as it comes
+        The keywords field should not be modified leave it as it comes, it they are not present dont include them.
 
         <Metadata>
           Post URL: ${postURL}
@@ -78,9 +78,17 @@ export async function generateRecipeFromAI(
           ${transcription}
         </Transcription>
 
-        <keywords>
-            ${tags.join(", ")}
-            </keywords>
+        ${
+            tags && tags.length > 0 && Array.isArray(tags)
+                ? `<keywords>${tags.join(", ")}</keywords>`
+                : ""
+        }
+
+                ${
+                    tags && tags.length > 0 && !Array.isArray(tags)
+                        ? `<keywords>${tags}</keywords>`
+                        : ""
+                }
 
         Use the thumbnail for the image field and the post URL for the url field.
         Extract ingredients and instructions clearly.

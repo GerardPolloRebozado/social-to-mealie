@@ -17,7 +17,7 @@ Other sites may work as well, since the tool uses `yt-dlp` to download videos. I
 ## Features
 
 -   Import posts into Mealie with a link and a click
--   [iOS Shortcut](https://www.icloud.com/shortcuts/a66a809029904151a39d8d3b98fecae4) for easy importing
+-   [iOS Shortcut v0.3](https://www.icloud.com/shortcuts/3778d926ed794dca95e658c6a4b5cf11) for easy importing
 
 ## Screenshot
 
