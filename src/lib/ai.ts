@@ -2,8 +2,9 @@ import { env } from "./constants";
 import { createOpenAI } from "@ai-sdk/openai";
 import { experimental_transcribe, generateObject } from "ai";
 import { z } from "zod";
+import { pipeline } from '@huggingface/transformers';
+import {WaveFile} from 'wavefile';
 
-// Initialize OpenAI client
 const client = createOpenAI({
     baseURL: env.OPENAI_URL,
     apiKey: env.OPENAI_API_KEY,
@@ -13,9 +14,40 @@ const transcriptionModel = client.transcription(env.TRANSCRIPTION_MODEL);
 const textModel = client.chat(env.TEXT_MODEL);
 
 export async function getTranscription(blob: Blob): Promise<string> {
-    // Always use Vercel AI SDK for transcription
+    if (env.LOCAL_WHISPER_MODEL) {
+        console.info("Using local Whisper model for transcription:", env.LOCAL_WHISPER_MODEL);
+        const transcriber = await pipeline('automatic-speech-recognition', env.LOCAL_WHISPER_MODEL);
+        const arrayBuffer = Buffer.from(await blob.arrayBuffer());
+        try {
+            const wav = new WaveFile(new Uint8Array(arrayBuffer));
+            // Pipeline expects Float32Array samples
+            wav.toBitDepth('32f');
+            // Whisper expects 16k sample rate
+            wav.toSampleRate(16000);
+            let audioData: any = wav.getSamples();
+            if (Array.isArray(audioData)) {
+                if (audioData.length > 1) {
+                    const SCALING_FACTOR = Math.sqrt(2);
+                    for (let i = 0; i < audioData[0].length; ++i) {
+                        audioData[0][i] = SCALING_FACTOR * (audioData[0][i] + audioData[1][i]) / 2;
+                    }
+                }
+                audioData = audioData[0];
+            }
+            const result = await transcriber(audioData);
+
+            if (result && typeof result === 'object' && 'text' in result) {
+                return (result as any).text;
+            }
+
+            return String(result);
+        } catch (err) {
+            console.error('Error transcribing with local Whisper model:', err);
+            throw err;
+        }
+    }
+
     try {
-        // The experimental_transcribe function expects audio as a Buffer or Uint8Array
         const audioBuffer = Buffer.from(await blob.arrayBuffer());
 
         const result = await experimental_transcribe({
