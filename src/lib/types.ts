@@ -17,7 +17,7 @@ export type envTypes = {
     YTDLP_PATH: string;
     EXTRA_PROMPT: string;
     COOKIES: string;
-    LOCAL_WHISPER_MODEL: string;
+    LOCAL_TRANSCRIPTION_MODEL: string;
 };
 
 export type recipeResult = {

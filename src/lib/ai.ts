@@ -14,26 +14,15 @@ const transcriptionModel = client.transcription(env.TRANSCRIPTION_MODEL);
 const textModel = client.chat(env.TEXT_MODEL);
 
 export async function getTranscription(blob: Blob): Promise<string> {
-    if (env.LOCAL_WHISPER_MODEL) {
-        console.info("Using local Whisper model for transcription:", env.LOCAL_WHISPER_MODEL);
-        const transcriber = await pipeline('automatic-speech-recognition', env.LOCAL_WHISPER_MODEL);
+    if (env.LOCAL_TRANSCRIPTION_MODEL) {
+        console.info("Using local Whisper model for transcription:", env.LOCAL_TRANSCRIPTION_MODEL);
+        const transcriber = await pipeline('automatic-speech-recognition', env.LOCAL_TRANSCRIPTION_MODEL);
         const arrayBuffer = Buffer.from(await blob.arrayBuffer());
         try {
             const wav = new WaveFile(new Uint8Array(arrayBuffer));
-            // Pipeline expects Float32Array samples
             wav.toBitDepth('32f');
-            // Whisper expects 16k sample rate
             wav.toSampleRate(16000);
             let audioData: any = wav.getSamples();
-            if (Array.isArray(audioData)) {
-                if (audioData.length > 1) {
-                    const SCALING_FACTOR = Math.sqrt(2);
-                    for (let i = 0; i < audioData[0].length; ++i) {
-                        audioData[0][i] = SCALING_FACTOR * (audioData[0][i] + audioData[1][i]) / 2;
-                    }
-                }
-                audioData = audioData[0];
-            }
             const result = await transcriber(audioData);
 
             if (result && typeof result === 'object' && 'text' in result) {
