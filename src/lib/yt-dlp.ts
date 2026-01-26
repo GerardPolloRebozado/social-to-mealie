@@ -17,16 +17,22 @@ const ytdlp = new YtDlp({
     binaryPath: env.YTDLP_PATH,
 });
 
-async function convertBufferToWav(inputBuffer: Uint8Array): Promise<Buffer> {
+async function convertBufferToWav(inputBuffer: Uint8Array, fileExt: string = ""): Promise<Buffer> {
     const tempDir = os.tmpdir();
-    const inputPath = path.join(tempDir, `input-${Date.now()}`);
+    const ext = fileExt ? (fileExt.startsWith('.') ? fileExt : `.${fileExt}`) : '';
+    const inputPath = path.join(tempDir, `input-${Date.now()}${ext}`);
     const outputPath = path.join(tempDir, `output-${Date.now()}.wav`);
 
     await writeFileAsync(inputPath, inputBuffer);
 
     try {
-        await execAsync(`${env.FFMPEG_PATH} -i "${inputPath}" -ac 1 -ar 16000 -f wav "${outputPath}"`);
-        return await readFileAsync(outputPath);
+        await execAsync(`${env.FFMPEG_PATH} -y -i "${inputPath}" -acodec pcm_s16le -ac 1 -ar 16000 -f wav "${outputPath}"`);
+        const buffer = await readFileAsync(outputPath);
+
+        if (buffer.length < 44 || buffer.subarray(0, 4).toString() !== 'RIFF') {
+             console.error("Generated WAV file is invalid or too small");
+        }
+        return buffer;
     } catch (error) {
         console.error("Error converting audio to WAV:", error);
         throw new Error("Failed to convert audio to WAV");
@@ -52,10 +58,10 @@ export async function downloadMediaWithYtDlp(
         });
 
         const buffer = await audioFile.bytes();
-        const wavBuffer = await convertBufferToWav(buffer);
+        const wavBuffer = await convertBufferToWav(buffer, metadata.ext);
 
         return {
-            blob: new Blob([wavBuffer], { type: "audio/wav" }),
+            blob: new Blob([new Uint8Array(wavBuffer)], { type: "audio/wav" }),
             thumbnail: metadata.thumbnail,
             description: metadata.description || "No description found",
             title: metadata.title,
