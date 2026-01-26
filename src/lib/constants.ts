@@ -17,7 +17,7 @@ export const env: envTypes = {
     FFMPEG_PATH:
         process.env.FFMPEG_PATH?.trim() || ("/usr/bin/ffmpeg" as string),
     YTDLP_PATH:
-        process.env.YTDLP_PATH?.trim() || ("/usr/local/bin/yt-dlp" as string),
+        process.env.YTDLP_PATH?.trim() || ("./yt-dlp" as string),
     EXTRA_PROMPT: process.env.EXTRA_PROMPT?.trim() || ("" as string),
     COOKIES: process.env.COOKIES?.trim() || ("" as string),
     LOCAL_TRANSCRIPTION_MODEL: process.env.LOCAL_TRANSCRIPTION_MODEL?.trim() || ("" as string),

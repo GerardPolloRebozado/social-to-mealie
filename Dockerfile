@@ -1,10 +1,14 @@
-FROM node:lts-alpine AS base
+FROM node:lts-slim AS base
 
-RUN apk add --no-cache --no-scripts \
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
     wget \
     curl \
     unzip \
-    ffmpeg
+    ffmpeg \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
@@ -17,12 +21,13 @@ FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+ENV NEXT_TELEMETRY_DISABLED=1
 RUN node --run build
 
 FROM base AS runner
 WORKDIR /app
 
-RUN apk add --no-cache --no-scripts python3 py3-pip
+RUN apt-get update && apt-get install -y python3-pip && rm -rf /var/lib/apt/lists/*
 
 ENV NODE_ENV=production
 ENV PORT=3000
@@ -35,14 +40,15 @@ ENV YTDLP_VERSION=${YTDLP_VERSION}
 # Default path for yt-dlp binary
 ENV YTDLP_PATH=./yt-dlp
 
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+RUN groupadd -g 1001 nodejs
+RUN useradd -r -u 1001 -g nodejs nextjs
 
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
 COPY ./entrypoint.sh /app/entrypoint.sh
+
 RUN chown -R nextjs:nodejs /app
 
 # If a build-time YTDLP_VERSION is provided, try downloading yt-dlp into the path.
@@ -55,7 +61,7 @@ RUN if [ -n "$YTDLP_VERSION" ]; then \
     wget -q -O $YTDLP_PATH "$YTDLP_URL" && chmod +x $YTDLP_PATH || true; \
     fi
 
-# Ensure the downloaded binary (if any) is owned by the app user so runtime chown/chmod won't fail
+# Ensure the downloaded binary (if any) is owned by the app user
 RUN if [ -f "$YTDLP_PATH" ]; then \
     chown nextjs:nodejs "$YTDLP_PATH" || true; \
     chmod +x "$YTDLP_PATH" || true; \
@@ -65,5 +71,10 @@ USER nextjs
 
 EXPOSE 3000
 
+# Ensure cache dir exists
+RUN mkdir -p /app/node_modules/@xenova/.cache/
+RUN chmod 777 -R /app/node_modules/@xenova/
+
+# /bin/sh is available in Debian, but you can also use /bin/bash if your entrypoint needs it
 ENTRYPOINT ["/bin/sh","/app/entrypoint.sh"]
 CMD ["node", "--run", "start"]
