@@ -20,4 +20,5 @@ export const env: envTypes = {
         process.env.YTDLP_PATH?.trim() || ("/usr/local/bin/yt-dlp" as string),
     EXTRA_PROMPT: process.env.EXTRA_PROMPT?.trim() || ("" as string),
     COOKIES: process.env.COOKIES?.trim() || ("" as string),
+    LOCAL_TRANSCRIPTION_MODEL: process.env.LOCAL_TRANSCRIPTION_MODEL?.trim() || ("" as string),
 };
