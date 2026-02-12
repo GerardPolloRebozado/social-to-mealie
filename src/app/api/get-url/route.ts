@@ -1,6 +1,6 @@
-import { getRecipe, postRecipe } from "@//lib/mealie";
-import type { progressType, recipeInfo, socialMediaResult } from "@//lib/types";
-import { generateRecipeFromAI, getTranscription } from "@/lib/ai"; // Import new AI functions
+import { getRecipe, postRecipe } from "@/lib/mealie";
+import type { progressType, socialMediaResult } from "@/lib/types";
+import { generateRecipeFromAI, getTranscription } from "@/lib/ai";
 import { env } from "@/lib/constants";
 import { downloadMediaWithYtDlp } from "@/lib/yt-dlp";
 
@@ -16,6 +16,7 @@ async function handleRequest(
 ) {
     const encoder = new TextEncoder();
     let socialMediaResult: socialMediaResult;
+    let transcription = "There is not transcriptions";
 
     const progress: progressType = {
         videoDownloaded: null,
@@ -37,22 +38,25 @@ async function handleRequest(
                 encoder.encode(`data: ${JSON.stringify({ progress })}\n\n`)
             );
         }
-        const transcription = await getTranscription(socialMediaResult.blob);
-        progress.audioTranscribed = true;
-        if (isSse && controller) {
-            controller.enqueue(
-                encoder.encode(`data: ${JSON.stringify({ progress })}\n\n`)
-            );
+        if (socialMediaResult.blob) {
+            transcription = await getTranscription(socialMediaResult.blob);
+            progress.audioTranscribed = true;
+            if (isSse && controller) {
+                controller.enqueue(
+                    encoder.encode(`data: ${JSON.stringify({progress})}\n\n`)
+                );
+            }
         }
 
         // Generate recipe JSON using AI
         const recipe = await generateRecipeFromAI(
             transcription,
             socialMediaResult.description,
-            url, // Use the original URL for postURL
+            url,
             socialMediaResult.thumbnail,
             env.EXTRA_PROMPT || "",
-            tags
+            tags,
+            socialMediaResult.images
         );
 
         console.log("Posting recipe to Mealie", recipe);
