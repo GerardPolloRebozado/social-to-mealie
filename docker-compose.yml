@@ -18,6 +18,8 @@ services:
       # Optional, addition to the prompt, useful for translation needs remove if not needed
       - EXTRA_PROMPT=The description, ingredients, and instructions must be provided in Spanish
       - COOKIES= #Optional, cookie for yt-dlp requests, useful for protected content
+    volumes:
+      - ./cookies.txt:/app/cookies.txt # Optional, only needed for some content
     ports:
       - 4000:3000
     security_opt:

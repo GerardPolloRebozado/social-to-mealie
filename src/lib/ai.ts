@@ -1,8 +1,8 @@
-import { env } from "./constants";
-import { createOpenAI } from "@ai-sdk/openai";
-import { experimental_transcribe, generateObject } from "ai";
-import { z } from "zod";
-import { pipeline } from '@huggingface/transformers';
+import {env} from "./constants";
+import {createOpenAI} from "@ai-sdk/openai";
+import {experimental_transcribe, generateText, Output} from "ai";
+import {z} from "zod";
+import {pipeline} from '@huggingface/transformers';
 import {WaveFile} from 'wavefile';
 
 const client = createOpenAI({
@@ -57,46 +57,39 @@ export async function generateRecipeFromAI(
     postURL: string,
     thumbnail: string,
     extraPrompt: string,
-    tags: string[]
+    tags: string[],
+    images: string[],
 ) {
-    const schema = z.object({
-        "@context": z
-            .literal("https://schema.org")
-            .default("https://schema.org"),
-        "@type": z.literal("Recipe").default("Recipe"),
-        name: z.string(),
-        image: z.string().optional(),
-        url: z.string().optional(),
-        description: z.string(),
-        recipeIngredient: z.array(z.string()),
-        recipeInstructions: z.array(
-            z.object({
-                "@type": z.literal("HowToStep").default("HowToStep"),
-                text: z.string(),
-            })
-        ),
-        keywords: z.array(z.string()).optional(),
+    const schema = Output.object({
+        schema: z.object({
+            "@context": z
+                .literal("https://schema.org")
+                .default("https://schema.org"),
+            "@type": z.literal("Recipe").default("Recipe"),
+            name: z.string(),
+            image: z.string().optional(),
+            url: z.string().optional(),
+            description: z.string(),
+            recipeIngredient: z.array(z.string()),
+            recipeInstructions: z.array(
+                z.object({
+                    "@type": z.literal("HowToStep").default("HowToStep"),
+                    text: z.string(),
+                })
+            ),
+            keywords: z.array(z.string()).optional()
+        }),
     });
 
     try {
-        const { object } = await generateObject({
-            model: textModel,
-            schema,
-            prompt: `
-         You are an expert chef assistant. Review the following recipe transcript and refine it for clarity, conciseness, and accuracy.
-        Ensure ingredients and instructions are well-formatted and easy to follow.
-        Correct any obvious errors or omissions.
-        Output must be valid JSON-LD Schema.org Recipe format.
-        The keywords field should not be modified leave it as it comes, it they are not present dont include them.
-
-        <Metadata>
-          Post URL: ${postURL}
-          Description: ${description}
-          Thumbnail: ${thumbnail}
+        const userPrompt = `<Metadata>
+            Post URL: ${postURL}
+            Description: ${description}
+            Thumbnail: ${thumbnail}
         </Metadata>
 
         <Transcription>
-          ${transcription}
+        ${transcription}
         </Transcription>
 
         ${
@@ -105,11 +98,11 @@ export async function generateRecipeFromAI(
                 : ""
         }
 
-                ${
-                    tags && tags.length > 0 && !Array.isArray(tags)
-                        ? `<keywords>${tags}</keywords>`
-                        : ""
-                }
+        ${
+            tags && tags.length > 0 && !Array.isArray(tags)
+                ? `<keywords>${tags}</keywords>`
+                : ""
+        }
 
         Use the thumbnail for the image field and the post URL for the url field.
         Extract ingredients and instructions clearly.
@@ -120,11 +113,38 @@ export async function generateRecipeFromAI(
         ${extraPrompt}`
                 : ""
         }
-      `,
-        });
+        `;
 
-        return object;
-    } catch (error) {
+        const {output} = await generateText({
+            model: textModel,
+            output: schema,
+            messages: [
+                {
+                    role: "system",
+                    content: "You are an expert chef assistant. Review the following recipe transcript and refine it for clarity, conciseness, and accuracy.\n" +
+                        "Ensure ingredients and instructions are well-formatted and easy to follow.\n" +
+                        "Correct any obvious errors or omissions.\n" +
+                        "Output must be valid JSON-LD Schema.org Recipe format.\n" +
+                        "The keywords field should not be modified leave it as it comes, it they are not present dont include them. Only add relevant tags dont add tags that are not relevant to the recipe."
+                },
+                {
+                    role: "user",
+                    content: [
+                        {
+                            type: "text" as const,
+                            text: userPrompt,
+                        },
+                        ...images.filter(img => img).map(img => ({
+                            type: "image" as const,
+                            image: img,
+                        }))
+                    ],
+                }
+            ],
+        });
+        return output;
+    } catch
+        (error) {
         console.error("Error generating recipe with AI:", error);
         throw new Error("Failed to generate recipe structure");
     }

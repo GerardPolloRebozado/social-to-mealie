@@ -6,6 +6,7 @@ import path from "path";
 import os from "os";
 import { exec } from "child_process";
 import { promisify } from "util";
+import {downloadMediaWithGalleryDl} from "@/lib/gallery-dl";
 
 const execAsync = promisify(exec);
 const writeFileAsync = promisify(fs.writeFile);
@@ -65,9 +66,16 @@ export async function downloadMediaWithYtDlp(
             thumbnail: metadata.thumbnail,
             description: metadata.description || "No description found",
             title: metadata.title,
+            images: [],
         };
-    } catch (error) {
-        console.error("Error in downloadMediaWithYtDlp:", error);
-        throw new Error("Failed to download media or metadata");
+        } catch (error) {
+            console.warn("yt-dlp failed, falling back to gallery-dl:", error);
+            try {
+                return await downloadMediaWithGalleryDl(url);
+            } catch (galleryError) {
+                console.error("gallery-dl also failed:", galleryError);
+                throw new Error("Failed to download media or metadata with both yt-dlp and gallery-dl");
+            }
+        }
     }
-}
+    

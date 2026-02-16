@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y \
     unzip \
     ffmpeg \
     ca-certificates \
+    gallery-dl \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
