@@ -92,4 +92,6 @@ Because theese providers don't support the transcriptions API it requires LOCAL_
 - llmstudio 
 - ollama
 
-I can work with any other provider that is compatible with the OpenAI API, if you find any issues please open an issue.
+It can work with any other provider that is compatible with the OpenAI API, if you find any issues please open an issue.
+
+[![Star History Chart](https://app.repohistory.com/api/svg?repo=GerardPolloRebozado/social-to-mealie&type=Date&background=0D1117&color=f86262)](https://app.repohistory.com/star-history)
