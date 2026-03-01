@@ -77,7 +77,18 @@ export async function generateRecipeFromAI(
                     text: z.string(),
                 })
             ),
-            keywords: z.array(z.string()).optional()
+            keywords: z.array(z.string()).optional(),
+            nutrition: z.object({
+                "@type": z.literal("NutritionInformation").default("NutritionInformation"),
+                calories: z.string().optional(),
+                carbohydrateContent: z.string().optional(),
+                proteinContent: z.string().optional(),
+                fatContent: z.string().optional(),
+                cholesterolContent: z.string().optional(),
+                fiberContent: z.string().optional(),
+                sugarContent: z.string().optional(),
+                sodiumContent: z.string().optional(),
+            })
         }),
     });
 
