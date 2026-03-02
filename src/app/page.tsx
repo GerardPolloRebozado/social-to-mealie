@@ -1,5 +1,7 @@
 import { RecipeFetcher } from '@/components/recipe-fetcher';
 import GetTagSelect from '../components/tag-select/tag-fetch';
+import {Suspense} from "react";
+import {Spinner} from "@/components/ui/spinner";
 
 export default async function Page({
   searchParams,
@@ -13,7 +15,9 @@ export default async function Page({
   return (
     <div className='flex flex-col items-center justify-center h-screen'>
       <h1 className='text-3xl font-bold'>Welcome to social to Mealie</h1>
+        <Suspense fallback={<Spinner />}>
       <RecipeFetcher tags={tags} />
+        </Suspense>
       <div className='w-fit min-w-96 m-4'>
         <GetTagSelect query={tagQuery} />
       </div>
