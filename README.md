@@ -1,3 +1,8 @@
+
+<p align="center">
+<img width="150" src="./public/android-chrome-512x512.png" alt="logo" />
+</p>
+
 # Social Media to Mealie
 
 Have you found a recipe on social media and don’t want to write it out yourself? This tool lets you import recipes from
