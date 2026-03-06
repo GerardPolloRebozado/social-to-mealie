@@ -88,7 +88,7 @@ export async function generateRecipeFromAI(
                 fiberContent: z.string().optional(),
                 sugarContent: z.string().optional(),
                 sodiumContent: z.string().optional(),
-            })
+            }).optional()
         }),
     });
 
