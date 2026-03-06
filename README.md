@@ -26,6 +26,7 @@ websites, please open an issue.
 
 - Import posts into Mealie with a link and a click
 - [iOS Shortcut v0.3](https://www.icloud.com/shortcuts/3778d926ed794dca95e658c6a4b5cf11) for easy importing
+- PWA support, to allow sharing links to the app from mobile devices for quick importing.
 
 ## Screenshot
 
@@ -71,6 +72,8 @@ docker run --restart unless-stopped --name social-to-mealie \
 
 </details>
 
+3. In order to be able to install the PWA the app needs to have HTTPS, you can use a reverse proxy like caddy or nginx, but be careful as opening this app to the internet as it will allow anyone to submit recipes to your Mealie instance. I recommend adding a small log in or IP whitelist
+
 ## Environment Variables
 
 | Variable                  | Required | Description                                                                                                                            |
@@ -98,5 +101,7 @@ Because theese providers don't support the transcriptions API it requires LOCAL_
 - ollama
 
 It can work with any other provider that is compatible with the OpenAI API, if you find any issues please open an issue.
+
+
 
 [![Star History Chart](https://app.repohistory.com/api/svg?repo=GerardPolloRebozado/social-to-mealie&type=Date&background=0D1117&color=f86262)](https://app.repohistory.com/star-history)
