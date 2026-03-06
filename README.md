@@ -100,6 +100,14 @@ Because theese providers don't support the transcriptions API it requires LOCAL_
 - llmstudio 
 - ollama
 
+Some recommended models for local AI are:
+
+- `qwen3-vl:8b`
+- `gemma-3-12b`
+
+If you want to use another model the model needs to have tools support and vision capabilities.
+If you want better results use the same models but in larger variants.
+
 It can work with any other provider that is compatible with the OpenAI API, if you find any issues please open an issue.
 
 
