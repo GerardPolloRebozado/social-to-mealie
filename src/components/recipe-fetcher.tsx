@@ -1,15 +1,15 @@
 'use client';
 
-import {Button} from '@/components/ui/button';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/components/ui/card';
-import {Spinner} from '@/components/ui/spinner';
-import {Textarea} from '@/components/ui/textarea';
-import type {progressType, recipeResult} from '@/lib/types';
-import {CircleCheck, CircleX} from 'lucide-react';
-import {useEffect, useState} from 'react';
-import {useSearchParams} from "next/navigation";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Spinner } from '@/components/ui/spinner';
+import { Textarea } from '@/components/ui/textarea';
+import type { progressType, recipeResult } from '@/lib/types';
+import { CircleCheck, CircleX } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from "next/navigation";
 
-export function RecipeFetcher({tags}: { tags: string[] }) {
+export function RecipeFetcher({ tags }: { tags: string[] }) {
     const searchParams = useSearchParams()
     const [progress, setProgress] = useState<progressType | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -37,7 +37,7 @@ export function RecipeFetcher({tags}: { tags: string[] }) {
                     headers: {
                         'Content-Type': 'text/event-stream',
                     },
-                    body: JSON.stringify({url, tags}),
+                    body: JSON.stringify({ url, tags }),
                 });
                 const reader = response.body?.getReader();
                 const decoder = new TextDecoder();
@@ -45,7 +45,7 @@ export function RecipeFetcher({tags}: { tags: string[] }) {
                 if (!reader) throw new Error('No readable stream available');
 
                 while (true) {
-                    const {done, value} = await reader.read();
+                    const { done, value } = await reader.read();
                     if (done) break;
 
                     const chunk = decoder.decode(value);
@@ -103,31 +103,31 @@ export function RecipeFetcher({tags}: { tags: string[] }) {
                         <p className={'flex gap-4'}>
                             Video downloaded{' '}
                             {progress.videoDownloaded === true ? (
-                                <CircleCheck/>
+                                <CircleCheck />
                             ) : progress.videoDownloaded === null ? (
-                                <Spinner size={'small'}/>
+                                <Spinner size={'small'} />
                             ) : (
-                                <CircleX/>
+                                <CircleX />
                             )}
                         </p>
                         <p className={'flex gap-4'}>
                             Audio transcribed{' '}
                             {progress.audioTranscribed === true ? (
-                                <CircleCheck/>
+                                <CircleCheck />
                             ) : progress.audioTranscribed === null ? (
-                                <Spinner size={'small'}/>
+                                <Spinner size={'small'} />
                             ) : (
-                                <CircleX/>
+                                <CircleX />
                             )}
                         </p>
                         <p className={'flex gap-4'}>
                             Recipe created{' '}
                             {progress.recipeCreated === true ? (
-                                <CircleCheck/>
+                                <CircleCheck />
                             ) : progress.recipeCreated === null ? (
-                                <Spinner size={'small'}/>
+                                <Spinner size={'small'} />
                             ) : (
-                                <CircleX/>
+                                <CircleX />
                             )}
                         </p>
                     </CardContent>
@@ -140,7 +140,7 @@ export function RecipeFetcher({tags}: { tags: string[] }) {
                             <Card className='mt-4 w-60'>
                                 <CardHeader>
                                     <img src={recipe.imageUrl} alt={recipe.description}
-                                         className='aspect-square object-cover'/>
+                                        className='aspect-square object-cover' />
                                     <CardTitle>{recipe.name}</CardTitle>
                                     <CardDescription>{recipe.description}</CardDescription>
                                 </CardHeader>
