@@ -11,6 +11,7 @@ export type envTypes = {
     TRANSCRIPTION_MODEL: string;
     TEXT_MODEL: string;
     MEALIE_URL: string;
+    EXTERNAL_MEALIE_URL: string;
     MEALIE_API_KEY: string;
     MEALIE_GROUP_NAME: string;
     FFMPEG_PATH: string;

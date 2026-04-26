@@ -22,7 +22,7 @@ export async function postRecipe(recipeData: any) {
                     data: payloadData,
                 }),
                 signal: AbortSignal.timeout(120000),
-            }
+            },
         );
 
         if (!res.ok) {
@@ -36,10 +36,10 @@ export async function postRecipe(recipeData: any) {
     } catch (error: any) {
         if (error.name === "AbortError") {
             console.error(
-                "Timeout creating mealie recipe. Report this issue on Mealie GitHub."
+                "Timeout creating mealie recipe. Report this issue on Mealie GitHub.",
             );
             throw new Error(
-                `Timeout creating mealie recipe. Report this issue on Mealie GitHub. Input URL: ${env.MEALIE_URL}`
+                `Timeout creating mealie recipe. Report this issue on Mealie GitHub. Input URL: ${env.MEALIE_URL}`,
             );
         }
         console.error("Error in postRecipe:", error);
@@ -62,7 +62,7 @@ export async function getRecipe(recipeSlug: string): Promise<recipeResult> {
     return {
         name: body.name,
         description: body.description,
-        imageUrl: `${env.MEALIE_URL}/api/media/recipes/${body.id}/images/original.webp`,
-        url: `${env.MEALIE_URL}/g/${env.MEALIE_GROUP_NAME}/r/${recipeSlug}`,
+        imageUrl: `${env.EXTERNAL_MEALIE_URL || env.MEALIE_URL}/api/media/recipes/${body.id}/images/original.webp`,
+        url: `${env.EXTERNAL_MEALIE_URL || env.MEALIE_URL}/g/${env.MEALIE_GROUP_NAME}/r/${recipeSlug}`,
     };
 }

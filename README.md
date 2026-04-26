@@ -119,20 +119,21 @@ docker run --restart unless-stopped --name social-to-mealie \
 
 ## Environment Variables
 
-| Variable                  | Required | Default                     | Description                                                                                                                            |
-| ------------------------- | -------- | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| OPENAI_URL                | Yes      | `https://api.openai.com/v1` | URL for the OpenAI API or a compatible one                                                                                             |
-| OPENAI_API_KEY            | Yes      | —                           | API key for OpenAI or a compatible one                                                                                                 |
-| TRANSCRIPTION_MODEL       | No       | `whisper-1`                 | Whisper model to use, required when the local one is not filled                                                                        |
-| LOCAL_TRANSCRIPTION_MODEL | No       | —                           | Model ID from hugging face to use for local audio to text transcription, required when the provider doesn't support transcriptions API |
-| TEXT_MODEL                | Yes      | `gpt-5-mini`                | Text model to use for recipe generation                                                                                                |
-| MEALIE_URL                | Yes      | `http://localhost:9000`     | URL of your Mealie instance                                                                                                            |
-| MEALIE_API_KEY            | Yes      | —                           | API key for Mealie                                                                                                                     |
-| MEALIE_GROUP_NAME         | No       | `home`                      | Mealie group name                                                                                                                      |
-| EXTRA_PROMPT              | No       | —                           | Additional instructions for AI, such as language translation                                                                           |
-| YTDLP_VERSION             | No       | `latest`                    | Version of yt-dlp to use                                                                                                               |
-| PORT                      | No       | `4000`                      | Host port to expose the app on                                                                                                         |
-| COOKIES                   | No       | —                           | Cookies string for yt-dlp to access protected content `NAME=VALUE`                                                                     |
+| Variable                  | Required | Default                     | Description                                                                                                                                  |
+| ------------------------- | -------- | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| OPENAI_URL                | Yes      | `https://api.openai.com/v1` | URL for the OpenAI API or a compatible one                                                                                                   |
+| OPENAI_API_KEY            | Yes      | —                           | API key for OpenAI or a compatible one                                                                                                       |
+| TRANSCRIPTION_MODEL       | No       | `whisper-1`                 | Whisper model to use, required when the local one is not filled                                                                              |
+| LOCAL_TRANSCRIPTION_MODEL | No       | —                           | Model ID from hugging face to use for local audio to text transcription, required when the provider doesn't support transcriptions API       |
+| TEXT_MODEL                | Yes      | `gpt-5-mini`                | Text model to use for recipe generation                                                                                                      |
+| MEALIE_URL                | Yes      | `http://localhost:9000`     | URL of your Mealie instance                                                                                                                  |
+| EXTERNAL_MEALIE_URL       | No       | -                           | Optional, this will be the URL used when showing the result of the recipe, not needed if the `MEALIE_URL` is already a public accessible URL |
+| MEALIE_API_KEY            | Yes      | —                           | API key for Mealie                                                                                                                           |
+| MEALIE_GROUP_NAME         | No       | `home`                      | Mealie group name                                                                                                                            |
+| EXTRA_PROMPT              | No       | —                           | Additional instructions for AI, such as language translation                                                                                 |
+| YTDLP_VERSION             | No       | `latest`                    | Version of yt-dlp to use                                                                                                                     |
+| PORT                      | No       | `4000`                      | Host port to expose the app on                                                                                                               |
+| COOKIES                   | No       | —                           | Cookies string for yt-dlp to access protected content `NAME=VALUE`                                                                           |
 
 ## Tested AI providers compatibility
 
