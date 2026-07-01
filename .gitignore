@@ -42,3 +42,13 @@ next-env.d.ts
 yt-dlp
 .idea
 cookies.txt
+# Devenv
+.devenv*
+devenv.local.nix
+devenv.local.yaml
+
+# direnv
+.direnv
+
+# pre-commit
+.pre-commit-config.yaml
