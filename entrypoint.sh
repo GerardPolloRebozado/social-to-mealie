@@ -5,18 +5,23 @@
 set -e
 
 YTDLP_BIN_PATH="${YTDLP_PATH:-./yt-dlp}"
-YTDLP_VER="${YTDLP_VERSION:-}"
+YTDLP_VER="${YTDLP_VERSION:-latest}"
 
 download_yt_dlp() {
-  if [ -z "$YTDLP_VER" ] || [ "$YTDLP_VER" = "" ]; then
-    echo "No YTDLP_VERSION provided; skipping yt-dlp download."
-    return
-  fi
-
   if [ -x "$YTDLP_BIN_PATH" ]; then
-    echo "yt-dlp already present at $YTDLP_BIN_PATH"
-    return
-  fi
+      # If it is 'latest', check if the file is older than 1 day (mtime +0 means > 24 hours)
+      if [ "$YTDLP_VER" = "latest" ]; then
+        if [ -n "$(find "$YTDLP_BIN_PATH" -mtime +0 2>/dev/null)" ]; then
+          echo "yt-dlp is present but older than 1 day and version is 'latest'. Re-downloading..."
+        else
+          echo "yt-dlp is present, less than 1 day old, and version is 'latest'. Skipping download."
+          return
+        fi
+      else
+        echo "yt-dlp already present at $YTDLP_BIN_PATH"
+        return
+      fi
+    fi
 
   if [ "$YTDLP_VER" = "latest" ]; then
     URL="https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp"
