@@ -128,7 +128,8 @@ export async function generateRecipeFromAI(
 
         const {output} = await generateText({
             model: textModel,
-            output: schema,
+          output: schema,
+          allowSystemInMessages: true,
             messages: [
                 {
                     role: "system",
