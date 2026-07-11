@@ -62,10 +62,8 @@ export async function generateRecipeFromAI(
 ) {
     const schema = Output.object({
         schema: z.object({
-            "@context": z
-                .literal("https://schema.org")
-                .default("https://schema.org"),
-            "@type": z.literal("Recipe").default("Recipe"),
+            "@context": z.literal("https://schema.org"),
+            "@type": z.literal("Recipe"),
             name: z.string(),
             image: z.string().optional(),
             url: z.string().optional(),
@@ -73,13 +71,13 @@ export async function generateRecipeFromAI(
             recipeIngredient: z.array(z.string()),
             recipeInstructions: z.array(
                 z.object({
-                    "@type": z.literal("HowToStep").default("HowToStep"),
+                    "@type": z.literal("HowToStep"),
                     text: z.string(),
                 })
             ),
             keywords: z.array(z.string()).optional(),
             nutrition: z.object({
-                "@type": z.literal("NutritionInformation").default("NutritionInformation"),
+                "@type": z.literal("NutritionInformation"),
                 calories: z.string().optional(),
                 carbohydrateContent: z.string().optional(),
                 proteinContent: z.string().optional(),
