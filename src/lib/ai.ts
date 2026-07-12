@@ -65,8 +65,8 @@ export async function generateRecipeFromAI(
             "@context": z.literal("https://schema.org"),
             "@type": z.literal("Recipe"),
             name: z.string(),
-            image: z.string().optional(),
-            url: z.string().optional(),
+            image: z.string().nullable(),
+            url: z.string().nullable(),
             description: z.string(),
             recipeIngredient: z.array(z.string()),
             recipeInstructions: z.array(
@@ -75,18 +75,18 @@ export async function generateRecipeFromAI(
                     text: z.string(),
                 })
             ),
-            keywords: z.array(z.string()).optional(),
+            keywords: z.array(z.string()).nullable(),
             nutrition: z.object({
                 "@type": z.literal("NutritionInformation"),
-                calories: z.string().optional(),
-                carbohydrateContent: z.string().optional(),
-                proteinContent: z.string().optional(),
-                fatContent: z.string().optional(),
-                cholesterolContent: z.string().optional(),
-                fiberContent: z.string().optional(),
-                sugarContent: z.string().optional(),
-                sodiumContent: z.string().optional(),
-            }).optional()
+                calories: z.string().nullable(),
+                carbohydrateContent: z.string().nullable(),
+                proteinContent: z.string().nullable(),
+                fatContent: z.string().nullable(),
+                cholesterolContent: z.string().nullable(),
+                fiberContent: z.string().nullable(),
+                sugarContent: z.string().nullable(),
+                sodiumContent: z.string().nullable(),
+            }).nullable()
         }),
     });
 
@@ -135,7 +135,9 @@ export async function generateRecipeFromAI(
                         "Ensure ingredients and instructions are well-formatted and easy to follow.\n" +
                         "Correct any obvious errors or omissions.\n" +
                         "Output must be valid JSON-LD Schema.org Recipe format.\n" +
-                        "The keywords field should not be modified leave it as it comes, it they are not present dont include them. Only add relevant tags dont add tags that are not relevant to the recipe."
+                        "Return unavailable optional values as null instead of omitting them.\n" +
+                        "Do not invent nutrition values; use null for nutrition fields that are not reliably available, or null for nutrition if no reliable nutrition data is present.\n" +
+                        "Preserve any supplied keywords exactly. If no keywords are supplied, return keywords as null."
                 },
                 {
                     role: "user",
