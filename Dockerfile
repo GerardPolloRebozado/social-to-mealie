@@ -3,6 +3,7 @@ FROM node:lts-slim AS base
 RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip \
+    python3-venv \
     wget \
     curl \
     unzip \
@@ -38,9 +39,25 @@ ENV YTDLP_VERSION=${YTDLP_VERSION}
 
 # Default path for yt-dlp binary
 ENV YTDLP_PATH=./yt-dlp
+ENV VIRTUAL_ENV=/venv
+ENV PATH="/venv/bin:$PATH"
 
 RUN groupadd -g 1001 nodejs
 RUN useradd -r -u 1001 -g nodejs nextjs
+
+# Set up virtual environment and pre-install yt-dlp with curl-cffi
+RUN python3 -m venv /venv && \
+    /venv/bin/pip install --no-cache-dir --upgrade pip && \
+    if [ -n "$YTDLP_VERSION" ] && [ "$YTDLP_VERSION" != "none" ] && [ "$YTDLP_VERSION" != "false" ] && [ "$YTDLP_VERSION" != "skip" ]; then \
+        if [ "$YTDLP_VERSION" = "latest" ]; then \
+            /venv/bin/pip install --no-cache-dir "yt-dlp[default,curl-cffi]"; \
+        else \
+            CLEAN_VER="${YTDLP_VERSION#v}"; \
+            /venv/bin/pip install --no-cache-dir "yt-dlp[default,curl-cffi]==${CLEAN_VER}"; \
+        fi; \
+        touch /venv/.yt-dlp-updated; \
+    fi && \
+    chown -R nextjs:nodejs /venv
 
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next ./.next
@@ -48,23 +65,12 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
 COPY ./entrypoint.sh /app/entrypoint.sh
 
+# Symlink yt-dlp to /app/yt-dlp so both ./yt-dlp and yt-dlp work
+RUN if [ -f /venv/bin/yt-dlp ]; then \
+        ln -sf /venv/bin/yt-dlp /app/yt-dlp; \
+    fi
+
 RUN chown -R nextjs:nodejs /app
-
-# If a build-time YTDLP_VERSION is provided, try downloading yt-dlp into the path.
-RUN if [ -n "$YTDLP_VERSION" ]; then \
-    if [ "$YTDLP_VERSION" = "latest" ]; then \
-    YTDLP_URL="https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp"; \
-    else \
-    YTDLP_URL="https://github.com/yt-dlp/yt-dlp/releases/download/${YTDLP_VERSION}/yt-dlp"; \
-    fi && \
-    wget -q -O $YTDLP_PATH "$YTDLP_URL" && chmod +x $YTDLP_PATH || true; \
-    fi
-
-# Ensure the downloaded binary (if any) is owned by the app user
-RUN if [ -f "$YTDLP_PATH" ]; then \
-    chown nextjs:nodejs "$YTDLP_PATH" || true; \
-    chmod +x "$YTDLP_PATH" || true; \
-    fi
 
 USER nextjs
 
