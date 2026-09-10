@@ -24,7 +24,7 @@
   ];
 
   enterShell = ''
-    export YTDLP_PATH="${pkgs.pnpyt-dlp}/bin/yt-dlp"
+    export YTDLP_PATH="${pkgs.yt-dlp}/bin/yt-dlp"
     export FFMPEG_PATH="${pkgs.ffmpeg}/bin/ffmpeg"
     export GALLERY_DL_PATH="${pkgs.gallery-dl}/bin/gallery-dl"
   '';
