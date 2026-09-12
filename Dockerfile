@@ -1,17 +1,5 @@
 FROM node:lts-slim AS base
 
-RUN apt-get update && apt-get install -y \
-    python3 \
-    python3-pip \
-    python3-venv \
-    wget \
-    curl \
-    unzip \
-    ffmpeg \
-    ca-certificates \
-    gallery-dl \
-    && rm -rf /var/lib/apt/lists/*
-
 WORKDIR /app
 
 FROM base AS deps
@@ -27,6 +15,15 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN node --run build
 
 FROM base AS runner
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 \
+    python3-venv \
+    ffmpeg \
+    ca-certificates \
+    gallery-dl \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 ENV NODE_ENV=production
@@ -59,27 +56,19 @@ RUN python3 -m venv /venv && \
     fi && \
     chown -R nextjs:nodejs /venv
 
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
-COPY ./entrypoint.sh /app/entrypoint.sh
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --chown=nextjs:nodejs entrypoint.sh /app/entrypoint.sh
 
 # Symlink yt-dlp to /app/yt-dlp so both ./yt-dlp and yt-dlp work
 RUN if [ -f /venv/bin/yt-dlp ]; then \
         ln -sf /venv/bin/yt-dlp /app/yt-dlp; \
     fi
 
-RUN chown -R nextjs:nodejs /app
-
 USER nextjs
 
 EXPOSE 3000
 
-# Ensure cache dir exists
-RUN mkdir -p /app/node_modules/@xenova/.cache/
-RUN chmod 777 -R /app/node_modules/@xenova/
-
-# /bin/sh is available in Debian, but you can also use /bin/bash if your entrypoint needs it
 ENTRYPOINT ["/bin/sh","/app/entrypoint.sh"]
-CMD ["node", "--run", "start"]
+CMD ["node", "server.js"]
