@@ -24,7 +24,7 @@ websites, please open an issue.
 ## Features
 
 - Import posts into Mealie with a link and a click
-- [iOS Shortcut v0.3](https://www.icloud.com/shortcuts/3778d926ed794dca95e658c6a4b5cf11) for easy importing
+- [iOS Shortcut v0.4](icloud.com/shortcuts/d7f414dfc05e4cf180d81ca24f59e7e5) for easy importing
 - PWA support, to allow sharing links to the app from mobile devices for quick importing.
 
 ## Screenshot
