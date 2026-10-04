@@ -16,7 +16,7 @@ async function handleRequest(
 ) {
     const encoder = new TextEncoder();
     let socialMediaResult: socialMediaResult;
-    let transcription = "There is not transcriptions";
+    let transcription = "";
 
     const progress: progressType = {
         videoDownloaded: null,
