@@ -1,6 +1,6 @@
 import {env} from "./constants";
 import {createOpenAI} from "@ai-sdk/openai";
-import {experimental_transcribe, generateText, Output} from "ai";
+import {generateText, NoTranscriptGeneratedError, Output, transcribe} from "ai";
 import {z} from "zod";
 import {pipeline} from '@huggingface/transformers';
 import {WaveFile} from 'wavefile';
@@ -26,10 +26,10 @@ export async function getTranscription(blob: Blob): Promise<string> {
             const result = await transcriber(audioData);
 
             if (result && typeof result === 'object' && 'text' in result) {
-                return (result as any).text;
+                return (result as any).text || "";
             }
 
-            return String(result);
+            return String(result || "");
         } catch (err) {
             console.error('Error transcribing with local Whisper model:', err);
             throw err;
@@ -39,13 +39,20 @@ export async function getTranscription(blob: Blob): Promise<string> {
     try {
         const audioBuffer = Buffer.from(await blob.arrayBuffer());
 
-        const result = await experimental_transcribe({
+        const result = await transcribe({
             model: transcriptionModel,
             audio: audioBuffer,
         });
 
-        return result.text;
+        return result.text || "";
     } catch (error) {
+        if (
+            NoTranscriptGeneratedError.isInstance(error) ||
+            (error instanceof Error && error.name === "AI_NoTranscriptGeneratedError")
+        ) {
+            console.warn("No transcript generated for audio (e.g. music only or silent audio):", error);
+            return "";
+        }
         console.error("Error in getTranscription (AI SDK):", error);
         throw new Error("Failed to transcribe audio via API");
     }
@@ -91,6 +98,11 @@ export async function generateRecipeFromAI(
     });
 
     try {
+        const hasTranscription = Boolean(transcription?.trim());
+        const transcriptionContent = hasTranscription
+            ? transcription.trim()
+            : "The video doesn't have any audio to transcribe";
+
         const userPrompt = `<Metadata>
             Post URL: ${postURL}
             Description: ${description}
@@ -98,9 +110,8 @@ export async function generateRecipeFromAI(
         </Metadata>
 
         <Transcription>
-        ${transcription}
+        ${transcriptionContent}
         </Transcription>
-
         ${
             tags && tags.length > 0 && Array.isArray(tags)
                 ? `<keywords>${tags.join(", ")}</keywords>`
@@ -114,7 +125,7 @@ export async function generateRecipeFromAI(
         }
 
         Use the thumbnail for the image field and the post URL for the url field.
-        Extract ingredients and instructions clearly.
+        Extract ingredients and instructions clearly${hasTranscription ? "." : " from the description, images, and metadata."}
         Output must be valid JSON-LD Schema.org Recipe format.
         ${
             extraPrompt.length > 1
@@ -131,7 +142,7 @@ export async function generateRecipeFromAI(
             messages: [
                 {
                     role: "system",
-                    content: "You are an expert chef assistant. Review the following recipe transcript and refine it for clarity, conciseness, and accuracy.\n" +
+                    content: "You are an expert chef assistant. Review the provided recipe information (such as description, metadata, images, and audio transcription if available) and extract or refine the recipe for clarity, conciseness, and accuracy.\n" +
                         "Ensure ingredients and instructions are well-formatted and easy to follow.\n" +
                         "Correct any obvious errors or omissions.\n" +
                         "Output must be valid JSON-LD Schema.org Recipe format.\n" +
