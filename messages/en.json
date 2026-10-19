@@ -1,0 +1,27 @@
+{
+  "Metadata": {
+    "description": "Convert social media recipes to Mealie format"
+  },
+  "Home": {
+    "welcome": "Welcome to social to Mealie"
+  },
+  "RecipeFetcher": {
+    "urlPlaceholder": "Insert all the urls to import separated by ,",
+    "submit": "Submit",
+    "loading": "Loading...",
+    "progress": "Progress",
+    "videoDownloaded": "Video downloaded",
+    "audioTranscribed": "Audio transcribed",
+    "recipeCreated": "Recipe created",
+    "errors": {
+      "noStream": "No readable stream available",
+      "parse": "Error parsing event stream",
+      "unknown": "Unknown error"
+    }
+  },
+  "TagSelect": {
+    "placeholder": "Select items...",
+    "search": "Search...",
+    "empty": "No item found."
+  }
+}

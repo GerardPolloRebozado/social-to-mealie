@@ -2,6 +2,7 @@ import { RecipeFetcher } from '@/components/recipe-fetcher';
 import GetTagSelect from '../components/tag-select/tag-fetch';
 import {Suspense} from "react";
 import {Spinner} from "@/components/ui/spinner";
+import { getTranslations } from 'next-intl/server';
 
 export default async function Page({
   searchParams,
@@ -11,10 +12,11 @@ export default async function Page({
   const sp = await searchParams;
   const tagQuery = sp.tagQuery as string | undefined;
   const tags = (sp.tags as string)?.split(',').filter(Boolean) ?? [];
+  const t = await getTranslations('Home');
 
   return (
     <div className='flex flex-col items-center justify-center h-screen'>
-      <h1 className='text-3xl font-bold'>Welcome to social to Mealie</h1>
+      <h1 className='text-3xl font-bold'>{t('welcome')}</h1>
         <Suspense fallback={<Spinner />}>
       <RecipeFetcher tags={tags} />
         </Suspense>

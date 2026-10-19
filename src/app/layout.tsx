@@ -1,21 +1,32 @@
 import './globals.css';
 import { ThemeProvider } from '@//components/theme-provider';
+import type { Metadata } from 'next';
+import { NextIntlClientProvider } from 'next-intl';
+import { getLocale, getTranslations } from 'next-intl/server';
 import type React from 'react';
 
-export const metadata = {
-  title: 'Social to Mealie',
-  description: 'Convert social media recipes to Mealie format',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('Metadata');
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return {
+    title: 'Social to Mealie',
+    description: t('description'),
+  };
+}
+
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const locale = await getLocale();
+
   return (
     <>
-      <html lang='en' suppressHydrationWarning>
+      <html lang={locale} suppressHydrationWarning>
         <head />
         <body>
-          <ThemeProvider attribute='class' defaultTheme='system' enableSystem disableTransitionOnChange>
-            {children}
-          </ThemeProvider>
+          <NextIntlClientProvider>
+            <ThemeProvider attribute='class' defaultTheme='system' enableSystem disableTransitionOnChange>
+              {children}
+            </ThemeProvider>
+          </NextIntlClientProvider>
         </body>
       </html>
     </>

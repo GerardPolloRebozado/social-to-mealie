@@ -26,6 +26,7 @@
     "lucide-react": "1.22.0",
     "m3u8-parser": "7.2.0",
     "next": "16.1.5",
+    "next-intl": "4.14.9",
     "next-themes": "0.4.6",
     "react": "19.2.7",
     "react-dom": "19.2.7",

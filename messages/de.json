@@ -1,0 +1,27 @@
+{
+  "Metadata": {
+    "description": "Rezepte aus sozialen Medien in Mealie übernehmen"
+  },
+  "Home": {
+    "welcome": "Willkommen bei Social to Mealie"
+  },
+  "RecipeFetcher": {
+    "urlPlaceholder": "Alle zu importierenden URLs, durch Komma getrennt",
+    "submit": "Importieren",
+    "loading": "Wird geladen...",
+    "progress": "Fortschritt",
+    "videoDownloaded": "Video heruntergeladen",
+    "audioTranscribed": "Audio transkribiert",
+    "recipeCreated": "Rezept erstellt",
+    "errors": {
+      "noStream": "Kein lesbarer Datenstrom verfügbar",
+      "parse": "Antwort des Servers konnte nicht gelesen werden",
+      "unknown": "Unbekannter Fehler"
+    }
+  },
+  "TagSelect": {
+    "placeholder": "Tags auswählen...",
+    "search": "Suchen...",
+    "empty": "Nichts gefunden."
+  }
+}

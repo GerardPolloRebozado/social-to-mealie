@@ -27,6 +27,8 @@ interface MultiSelectProps {
   selected?: string[]
   onChange?: (selected: string[]) => void
   placeholder?: string
+  searchPlaceholder?: string
+  emptyMessage?: string
   className?: string
   paramName?: string
 }
@@ -36,6 +38,8 @@ export function MultiSelectCombobox({
   selected: controlledSelected,
   onChange,
   placeholder = "Select items...",
+  searchPlaceholder = "Search...",
+  emptyMessage = "No item found.",
   className,
   paramName,
 }: MultiSelectProps) {
@@ -113,9 +117,9 @@ export function MultiSelectCombobox({
       </PopoverTrigger>
       <PopoverContent className="w-full p-0" align="start">
         <Command>
-          <CommandInput placeholder="Search..." />
+          <CommandInput placeholder={searchPlaceholder} />
           <CommandList>
-            <CommandEmpty>No item found.</CommandEmpty>
+            <CommandEmpty>{emptyMessage}</CommandEmpty>
             <CommandGroup>
               {options.map((option) => (
                 <CommandItem

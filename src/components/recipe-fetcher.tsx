@@ -6,10 +6,12 @@ import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
 import type { progressType, recipeResult } from '@/lib/types';
 import { CircleCheck, CircleX } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from "next/navigation";
 
 export function RecipeFetcher({ tags }: { tags: string[] }) {
+    const t = useTranslations('RecipeFetcher');
     const searchParams = useSearchParams()
     const [progress, setProgress] = useState<progressType | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -42,7 +44,7 @@ export function RecipeFetcher({ tags }: { tags: string[] }) {
                 const reader = response.body?.getReader();
                 const decoder = new TextDecoder();
 
-                if (!reader) throw new Error('No readable stream available');
+                if (!reader) throw new Error(t('errors.noStream'));
 
                 while (true) {
                     const { done, value } = await reader.read();
@@ -68,14 +70,14 @@ export function RecipeFetcher({ tags }: { tags: string[] }) {
                                 setLoading(false);
                             }
                         } catch (e) {
-                            setError('Error parsing event stream');
+                            setError(t('errors.parse'));
                             setLoading(false);
                         }
                     });
                 }
             }
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Unknown error');
+            setError(err instanceof Error ? err.message : t('errors.unknown'));
         } finally {
             setLoading(false);
         }
@@ -85,23 +87,23 @@ export function RecipeFetcher({ tags }: { tags: string[] }) {
         <>
             <p>Params {useSearchParams().toString()}</p>
             <Textarea
-                placeholder={'Insert all the urls to import separated by ,'}
+                placeholder={t('urlPlaceholder')}
                 className='w-96 m-4'
                 value={urlInput}
                 onChange={(e) => setUrlInput(e.target.value)}
             />
             <Button className='w-96' onClick={fetchRecipe} disabled={loading}>
-                {loading ? 'Loading...' : 'Submit'}
+                {loading ? t('loading') : t('submit')}
             </Button>
 
             {progress && (
                 <Card className={'mt-4 w-96'}>
                     <CardHeader>
-                        <CardTitle>{error || 'Progress'}</CardTitle>
+                        <CardTitle>{error || t('progress')}</CardTitle>
                     </CardHeader>
                     <CardContent className={'flex flex-col gap-4 justify-center items-center'}>
                         <p className={'flex gap-4'}>
-                            Video downloaded{' '}
+                            {t('videoDownloaded')}{' '}
                             {progress.videoDownloaded === true ? (
                                 <CircleCheck />
                             ) : progress.videoDownloaded === null ? (
@@ -111,7 +113,7 @@ export function RecipeFetcher({ tags }: { tags: string[] }) {
                             )}
                         </p>
                         <p className={'flex gap-4'}>
-                            Audio transcribed{' '}
+                            {t('audioTranscribed')}{' '}
                             {progress.audioTranscribed === true ? (
                                 <CircleCheck />
                             ) : progress.audioTranscribed === null ? (
@@ -121,7 +123,7 @@ export function RecipeFetcher({ tags }: { tags: string[] }) {
                             )}
                         </p>
                         <p className={'flex gap-4'}>
-                            Recipe created{' '}
+                            {t('recipeCreated')}{' '}
                             {progress.recipeCreated === true ? (
                                 <CircleCheck />
                             ) : progress.recipeCreated === null ? (

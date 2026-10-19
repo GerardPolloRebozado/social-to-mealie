@@ -1,8 +1,10 @@
 import { MultiSelectCombobox } from "@/components/ui/multi-select"
 import { env } from "@/lib/constants"
 import { Option, tag } from "@/lib/types"
+import { getTranslations } from "next-intl/server"
 
 export default async function GetTagSelect({ query }: { query: string | undefined }) {
+  const t = await getTranslations("TagSelect")
   const tags: Option[] = []
 
   try {
@@ -23,6 +25,12 @@ export default async function GetTagSelect({ query }: { query: string | undefine
   }
 
   return (
-    <MultiSelectCombobox options={tags} paramName="tags" />
+    <MultiSelectCombobox
+      options={tags}
+      paramName="tags"
+      placeholder={t("placeholder")}
+      searchPlaceholder={t("search")}
+      emptyMessage={t("empty")}
+    />
   )
 }
