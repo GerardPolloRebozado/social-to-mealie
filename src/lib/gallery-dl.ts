@@ -1,10 +1,10 @@
 import type { socialMediaResult } from "@/lib/types";
-import { exec } from "child_process";
+import { execFile } from "child_process";
 import { promisify } from "util";
 import sharp from "sharp";
 import emojiStrip from "emoji-strip";
 
-const execPromise = promisify(exec);
+const execFilePromise = promisify(execFile);
 
 async function getBase64(url: string): Promise<string> {
     const response = await fetch(url);
@@ -35,7 +35,9 @@ export async function downloadMediaWithGalleryDl(
     };
 
     try {
-        const { stdout } = await execPromise(`gallery-dl -j --cookies cookies.txt "${url}"`);
+        // The URL comes from the request: pass it as its own argument, never through a shell, and after "--" so it
+        // can't be read as one of gallery-dl's options.
+        const { stdout } = await execFilePromise("gallery-dl", ["-j", "--cookies", "cookies.txt", "--", url]);
 
         const rawData = JSON.parse(emojiStrip(stdout));
         for (const item of rawData) {

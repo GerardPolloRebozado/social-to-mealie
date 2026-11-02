@@ -4,11 +4,11 @@ import { YtDlp, type VideoInfo } from "ytdlp-nodejs";
 import fs from "fs";
 import path from "path";
 import os from "os";
-import { exec } from "child_process";
+import { execFile } from "child_process";
 import { promisify } from "util";
 import {downloadMediaWithGalleryDl} from "@/lib/gallery-dl";
 
-const execAsync = promisify(exec);
+const execFileAsync = promisify(execFile);
 const writeFileAsync = promisify(fs.writeFile);
 const readFileAsync = promisify(fs.readFile);
 const unlinkAsync = promisify(fs.unlink);
@@ -20,14 +20,20 @@ const ytdlp = new YtDlp({
 
 async function convertBufferToWav(inputBuffer: Uint8Array, fileExt: string = ""): Promise<Buffer> {
     const tempDir = os.tmpdir();
-    const ext = fileExt ? (fileExt.startsWith('.') ? fileExt : `.${fileExt}`) : '';
+    // The extension comes from the media's metadata: keep it only if it is a plain extension, so the file name stays
+    // inside the temporary directory.
+    const bareExt = fileExt.replace(/^\./, '');
+    const ext = /^[a-z0-9]{1,10}$/i.test(bareExt) ? `.${bareExt}` : '';
     const inputPath = path.join(tempDir, `input-${Date.now()}${ext}`);
     const outputPath = path.join(tempDir, `output-${Date.now()}.wav`);
 
     await writeFileAsync(inputPath, inputBuffer);
 
     try {
-        await execAsync(`${env.FFMPEG_PATH} -y -i "${inputPath}" -acodec pcm_s16le -ac 1 -ar 16000 -f wav "${outputPath}"`);
+        // Arguments, not a shell command line: nothing in the paths is interpreted by a shell.
+        await execFileAsync(env.FFMPEG_PATH, [
+            "-y", "-i", inputPath, "-acodec", "pcm_s16le", "-ac", "1", "-ar", "16000", "-f", "wav", outputPath,
+        ]);
         const buffer = await readFileAsync(outputPath);
 
         if (buffer.length < 44 || buffer.subarray(0, 4).toString() !== 'RIFF') {

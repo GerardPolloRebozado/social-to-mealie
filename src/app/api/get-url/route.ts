@@ -8,8 +8,26 @@ interface RequestBody {
     url: string;
     tags: string[];
 }
+
+// Only an absolute http(s) URL is passed on to the downloaders; anything else is refused before they run.
+function parseMediaUrl(url: unknown): string {
+    if (typeof url !== "string") {
+        throw new Error("Please provide a valid http(s) URL");
+    }
+    let parsed: URL;
+    try {
+        parsed = new URL(url.trim());
+    } catch {
+        throw new Error("Please provide a valid http(s) URL");
+    }
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+        throw new Error("Please provide a valid http(s) URL");
+    }
+    return parsed.href;
+}
+
 async function handleRequest(
-    url: string,
+    rawUrl: unknown,
     tags: string[],
     isSse: boolean,
     controller?: ReadableStreamDefaultController
@@ -25,6 +43,7 @@ async function handleRequest(
     };
 
     try {
+        const url = parseMediaUrl(rawUrl);
         if (isSse && controller) {
             controller.enqueue(
                 encoder.encode(`data: ${JSON.stringify({ progress })}\n\n`)
