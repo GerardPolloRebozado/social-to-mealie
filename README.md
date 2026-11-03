@@ -16,7 +16,8 @@ videos directly into [Mealie](https://github.com/mealie-recipes/mealie).
 - Pinterest
 
 Other sites may work as well, since the tool uses `yt-dlp` to download videos. If you encounter issues with other
-websites, please open an issue.
+websites, please open an issue. If you have an error with any of this sites, please ensure you have the latest version of yt-dlp as usually this website make changes that break yt-dlp.
+You can do that by removing the container so it fetches yt-dlp again.
 
 > **Note:** If you receive a `BAD_RECIPE` error, it may be due to Mealie’s recipe parsing. If you find a better prompt
 > or solution, feel free to open an issue or PR!
